@@ -52,6 +52,9 @@
     "tailwindcss": "^3.4.0",
     "typescript": "~6.0.3"
   },
+  "overrides": {
+    "react-native-worklets": "0.10.4"
+  },
   "allowScripts": {
     "@sentry/cli@2.58.4": true
   }
