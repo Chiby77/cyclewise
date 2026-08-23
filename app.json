@@ -56,7 +56,13 @@
           "color": "#F06292"
         }
       ],
-      "@sentry/react-native/expo",
+      [
+        "@sentry/react-native/expo",
+        {
+          "organization": "bluewave-technologies",
+          "project": "react-native"
+        }
+      ],
       [
         "react-native-widget-extension",
         {
