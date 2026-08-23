@@ -1,0 +1,17 @@
+diff --git a/node_modules/@react-native/codegen/lib/parsers/flow/components/events.js b/node_modules/@react-native/codegen/lib/parsers/flow/components/events.js
+index 8e45a2b..b5066a3 100644
+--- a/node_modules/@react-native/codegen/lib/parsers/flow/components/events.js
++++ b/node_modules/@react-native/codegen/lib/parsers/flow/components/events.js
+@@ -96,6 +96,12 @@ function getPropertyType(name, property, annotation, parser) {
+         type: 'ObjectTypeAnnotation',
+         properties: parser.getObjectProperties(typeAnnotation).map(member => buildPropertiesForEvent(member, parser, getPropertyType))
+       };
++    case '$ReadOnly':
++    case 'Readonly':
++      return {
++        type: 'ObjectTypeAnnotation',
++        properties: typeAnnotation.typeParameters.params[0].properties.map(member => buildPropertiesForEvent(member, parser, getPropertyType))
++      };
+     case 'ArrayTypeAnnotation':
+       return {
+         type: 'ArrayTypeAnnotation',
