@@ -2,6 +2,7 @@
   "expo": {
     "name": "CycleWise",
     "slug": "cyclewise-mobile",
+    "scheme": "cyclewise",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
