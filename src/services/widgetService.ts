@@ -1,5 +1,5 @@
+import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as WidgetExtension from 'react-native-widget-extension';
 
 export type WidgetData = {
   currentCycleDay: number;
@@ -14,6 +14,17 @@ const DEFAULT_WIDGET_DATA: WidgetData = {
   waterIntake: 800,
   waterGoal: 2000,
   lastUpdated: new Date().toISOString(),
+};
+
+const getWidgetExtension = () => {
+  if (Platform.OS === 'ios') {
+    try {
+      return require('react-native-widget-extension');
+    } catch {
+      return null;
+    }
+  }
+  return null;
 };
 
 /**
@@ -35,13 +46,16 @@ export async function updateWidgetData(
     const serialized = JSON.stringify(merged);
     await AsyncStorage.setItem(WIDGET_STORAGE_KEY, serialized);
 
-    // If native live activity or widget extension is active, forward update
-    try {
-      if (WidgetExtension.areActivitiesEnabled && WidgetExtension.areActivitiesEnabled()) {
-        WidgetExtension.updateActivity(merged);
+    // If native live activity or widget extension is active (iOS only), forward update
+    if (Platform.OS === 'ios') {
+      try {
+        const WidgetExtension = getWidgetExtension();
+        if (WidgetExtension?.areActivitiesEnabled && WidgetExtension.areActivitiesEnabled()) {
+          WidgetExtension.updateActivity(merged);
+        }
+      } catch {
+        // Graceful fallback if native widget bundle is not yet injected
       }
-    } catch {
-      // Graceful fallback if native widget bundle is not yet injected
     }
 
     return merged;
