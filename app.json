@@ -20,8 +20,12 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.bluewave.cyclewise",
       "infoPlist": {
-        "NSFaceIDUsageDescription": "Allow CycleWise to use Face ID to protect your health data."
-      }
+        "NSFaceIDUsageDescription": "Allow CycleWise to use Face ID to protect your health data.",
+        "NSSupportsLiveActivities": true,
+        "NSSupportsLiveActivitiesFrequentUpdates": false,
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "entitlements": {}
     },
     "android": {
       "adaptiveIcon": {
