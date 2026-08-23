@@ -58,7 +58,8 @@
         "@sentry/react-native/expo",
         {
           "organization": "bluewave-technologies",
-          "project": "react-native"
+          "project": "react-native",
+          "disableAutoUpload": true
         }
       ],
       [
