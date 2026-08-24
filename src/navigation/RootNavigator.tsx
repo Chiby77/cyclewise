@@ -19,6 +19,7 @@ import { ExportReportScreen } from '@/screens/ExportReportScreen';
 import { LanguageModalScreen } from '@/screens/LanguageModalScreen';
 import { AIHealthAssistantScreen } from '@/screens/AIHealthAssistantScreen';
 import { SignInScreen } from '@/screens/SignInScreen';
+import { SignUpScreen } from '@/screens/SignUpScreen';
 import { AccountScreen } from '@/screens/AccountScreen';
 import { TermsScreen } from '@/screens/TermsScreen';
 import { PrivacyPolicyScreen } from '@/screens/PrivacyPolicyScreen';

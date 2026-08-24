@@ -41,7 +41,7 @@ export function getThemeColors(isDark: boolean) {
     border: isDark ? colors.darkBorder : '#E5E7EB',
     pinkPrimary: isDark ? colors.darkPinkPrimary : colors.pinkPrimary,
     teal: isDark ? colors.darkTeal : colors.teal,
-    gradientHeader: isDark ? ['#880E4F', '#4A148C'] : ['#F06292', '#E91E63'],
-    gradientCard: isDark ? ['#1E1E22', '#2A2A30'] : ['#FFFFFF', '#FDEEF5'],
+    gradientHeader: isDark ? (['#880E4F', '#4A148C'] as const) : (['#F06292', '#E91E63'] as const),
+    gradientCard: isDark ? (['#1E1E22', '#2A2A30'] as const) : (['#FFFFFF', '#FDEEF5'] as const),
   };
 }

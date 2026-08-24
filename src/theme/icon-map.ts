@@ -9,6 +9,7 @@ import type { IconName } from '@/components/Icon';
 export const ICONS = {
   // Chrome / navigation
   back: 'arrow-back' as IconName,
+  forward: 'arrow-forward' as IconName,
   close: 'close' as IconName,
   settings: 'settings-outline' as IconName,
   help: 'help-circle-outline' as IconName,
@@ -25,6 +26,7 @@ export const ICONS = {
   send: 'send' as IconName,
   refresh: 'refresh-outline' as IconName,
   sparkles: 'sparkles' as IconName,
+  notifications: 'notifications-outline' as IconName,
 
   // Tab bar
   home: 'home-outline' as IconName,
