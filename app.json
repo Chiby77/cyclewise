@@ -55,14 +55,6 @@
         }
       ],
       [
-        "@sentry/react-native/expo",
-        {
-          "organization": "bluewave-technologies",
-          "project": "react-native",
-          "disableAutoUpload": true
-        }
-      ],
-      [
         "react-native-widget-extension",
         {
           "frequentUpdates": false
