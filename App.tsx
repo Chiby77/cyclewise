@@ -12,10 +12,8 @@ import { setupNotifications, scheduleWaterReminder } from '@/services/notificati
 import { initSentry, Sentry } from '@/lib/sentry';
 import './global.css';
 
-// Keep splash screen visible while app initializes resources
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
-// Initialize Sentry error telemetry
 initSentry();
 
 function App() {
@@ -24,11 +22,10 @@ function App() {
   useEffect(() => {
     async function prepareApp() {
       try {
-        // Setup local push notification channels & daily hydration trigger
+
         setupNotifications();
         await scheduleWaterReminder();
 
-        // Brief delay to ensure database & layout mount cleanly
         await new Promise((resolve) => setTimeout(resolve, 300));
       } catch (error) {
         console.warn('[App] Error during initialization:', error);

@@ -27,9 +27,6 @@ const getWidgetExtension = () => {
   return null;
 };
 
-/**
- * Updates the serialized widget dataset for native iOS/Android home screen widgets.
- */
 export async function updateWidgetData(
   updates: Partial<Omit<WidgetData, 'lastUpdated'>>
 ): Promise<WidgetData> {
@@ -46,7 +43,6 @@ export async function updateWidgetData(
     const serialized = JSON.stringify(merged);
     await AsyncStorage.setItem(WIDGET_STORAGE_KEY, serialized);
 
-    // If native live activity or widget extension is active (iOS only), forward update
     if (Platform.OS === 'ios') {
       try {
         const WidgetExtension = getWidgetExtension();
@@ -54,7 +50,7 @@ export async function updateWidgetData(
           WidgetExtension.updateActivity(merged);
         }
       } catch {
-        // Graceful fallback if native widget bundle is not yet injected
+
       }
     }
 
@@ -65,9 +61,6 @@ export async function updateWidgetData(
   }
 }
 
-/**
- * Retrieves the current widget dataset.
- */
 export async function getWidgetData(): Promise<WidgetData> {
   try {
     const raw = await AsyncStorage.getItem(WIDGET_STORAGE_KEY);

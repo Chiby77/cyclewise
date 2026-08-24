@@ -22,7 +22,7 @@ import {
   type PadReminderConfig,
 } from '@/services/padReminderService';
 
-const CIRCUMFERENCE = 2 * Math.PI * 80; // r = 80
+const CIRCUMFERENCE = 2 * Math.PI * 80;
 
 export function HomeScreen() {
   const navigation = useNavigation<AppNavigationProp>();
@@ -46,7 +46,6 @@ export function HomeScreen() {
   const [padModalVisible, setPadModalVisible] = useState(false);
   const [padConfig, setPadConfig] = useState<PadReminderConfig | null>(null);
 
-  // Active user goal mode
   const activeGoal = profile?.goal || 'Track My Cycle';
 
   const isPeriodActiveToday = isDatePeriod(todayStr) || Boolean(periodDayNumber);
@@ -61,7 +60,6 @@ export function HomeScreen() {
     setPadConfig(updated);
   };
 
-  // Compute wear time info
   const wearTimeInfo = useMemo(() => {
     if (!padConfig?.lastChangedTimestamp) {
       return { elapsedText: 'Not logged today', hoursElapsed: 0, isNearingCeiling: false };
@@ -147,7 +145,6 @@ export function HomeScreen() {
           </View>
         </View>
 
-        {/* Dynamic Goal Modes */}
         {activeGoal === 'Track My Pregnancy' ? (
           <View className="bg-pink-soft dark:bg-dark-card-hover rounded-2xl p-4 my-2 border border-pink-light dark:border-dark-border items-center gap-2">
             <View className="flex-row items-center gap-2">
@@ -270,7 +267,6 @@ export function HomeScreen() {
           </Pressable>
         </View>
 
-        {/* Weekly strip */}
         <View className="flex-row justify-between gap-1">
           {weekDays.map((d, i) => {
             const dateNum = weekDates[i];
@@ -300,9 +296,8 @@ export function HomeScreen() {
         </View>
       </SafeAreaView>
 
-      {/* Scrollable body */}
       <ScrollView className="flex-1 px-4" contentContainerClassName="py-3 pb-24" showsVerticalScrollIndicator={false}>
-        {/* Active Period Pad / Tampon Tracker Card */}
+
         {isPeriodActiveToday && (
           <View className="bg-card dark:bg-dark-card rounded-2xl p-4 shadow-sm mb-3 border border-pink-light dark:border-dark-border">
             <View className="flex-row items-center justify-between mb-2">
@@ -354,7 +349,7 @@ export function HomeScreen() {
           isPeriodActive={isPeriodActiveToday}
           isHeavyFlow={isHeavyFlow}
         />
-        {/* Symptom stat chips */}
+
         <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-3">
           <View className="flex-row gap-2 items-center">
             {symptomChips.map((c, i) => (
@@ -390,7 +385,6 @@ export function HomeScreen() {
           </View>
         </ScrollView>
 
-        {/* AI Health Assistant Banner */}
         <Pressable
           onPress={() => navigation.navigate('AIHealthAssistant')}
           className="bg-card dark:bg-dark-card rounded-2xl p-4 shadow-sm mb-3 border border-pink-light dark:border-dark-border flex-row items-center justify-between active:opacity-80"
@@ -407,7 +401,6 @@ export function HomeScreen() {
           <Icon name={ICONS.chevronForward} size={16} color={colors.pinkPrimary} />
         </Pressable>
 
-        {/* History */}
         <View className="bg-card dark:bg-dark-card rounded-2xl p-4 shadow-sm mb-3 border border-gray-100 dark:border-dark-border">
           <View className="flex-row items-center justify-between mb-3">
             <View className="flex-row items-center gap-2">
@@ -420,7 +413,6 @@ export function HomeScreen() {
             </Pressable>
           </View>
 
-          {/* Current cycle bar */}
           <View className="mb-3">
             <Text className="font-bold text-sm text-text dark:text-dark-text mb-1">
               Current cycle: {currentCycleDay} Days
@@ -447,7 +439,6 @@ export function HomeScreen() {
             </View>
           </View>
 
-          {/* Previous cycle bar */}
           <View>
             <View className="flex-row items-center gap-2 mb-1">
               <Text className="font-bold text-sm text-text dark:text-dark-text">31 Days</Text>
@@ -473,7 +464,6 @@ export function HomeScreen() {
           </View>
         </View>
 
-        {/* Home screen widget */}
         <View className="bg-card dark:bg-dark-card rounded-2xl p-4 shadow-sm mb-3 border border-gray-100 dark:border-dark-border">
           <View className="flex-row items-center gap-2 mb-3">
             <Icon name={ICONS.grid} size={18} color={colors.pinkPrimary} />
@@ -548,7 +538,6 @@ export function HomeScreen() {
           </View>
         </View>
 
-        {/* Quick stats connected to HealthContext & StatCard Editor */}
         <View className="flex-row gap-2">
           <StatCard
             label="Weight"

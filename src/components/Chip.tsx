@@ -11,7 +11,6 @@ type Props = {
   onPress: () => void;
 };
 
-/** A single toggle-able pill, used for multi-select rows in the Symptoms Log. */
 export function Chip({ icon, label, selected, onPress }: Props) {
   return (
     <Pressable

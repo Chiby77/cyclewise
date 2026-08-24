@@ -17,7 +17,7 @@ export type UserProfile = {
 export type DailyLog = {
   id: string;
   user_id: string;
-  log_date: string; // YYYY-MM-DD
+  log_date: string;
   flow: string | null;
   symptoms: string[];
   moods: string[];
@@ -46,9 +46,6 @@ export function getDatabase(): SQLite.SQLiteDatabase {
   return dbInstance;
 }
 
-/**
- * Initializes tables in SQLite.
- */
 export function initDatabase() {
   const db = getDatabase();
 
@@ -95,9 +92,6 @@ export function initDatabase() {
   `);
 }
 
-/**
- * Helper to safely parse JSON arrays/objects.
- */
 function parseJson<T>(raw: string | null | undefined, fallback: T): T {
   if (!raw) return fallback;
   try {
@@ -106,10 +100,6 @@ function parseJson<T>(raw: string | null | undefined, fallback: T): T {
     return fallback;
   }
 }
-
-// -------------------------------------------------------------
-// PROFILE OPERATIONS
-// -------------------------------------------------------------
 
 export function getLocalProfile(userId: string): UserProfile | null {
   const db = getDatabase();
@@ -185,10 +175,6 @@ export function upsertLocalProfile(profile: Partial<UserProfile> & { id: string 
   return merged;
 }
 
-// -------------------------------------------------------------
-// DAILY LOG OPERATIONS
-// -------------------------------------------------------------
-
 export function getLocalDailyLog(userId: string, logDate: string): DailyLog | null {
   const db = getDatabase();
   const row = db.getFirstSync<any>(
@@ -255,7 +241,7 @@ export function getAllLocalDailyLogs(userId: string): DailyLog[] {
 export function getLoggedPeriodDates(userId: string): string[] {
   const db = getDatabase();
   const rows = db.getAllSync<{ log_date: string }>(
-    `SELECT log_date FROM daily_logs 
+    `SELECT log_date FROM daily_logs
      WHERE user_id = ? AND is_deleted = 0 AND flow IS NOT NULL AND flow != '' AND flow != 'None'
      ORDER BY log_date ASC;`,
     [userId]

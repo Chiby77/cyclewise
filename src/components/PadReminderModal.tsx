@@ -33,7 +33,7 @@ export function PadReminderModal({ visible, onClose, isPeriodActive, isHeavyFlow
 
   const handleSelectProduct = (p: ProductType) => {
     let nextInterval = config.intervalHours;
-    // If switching to tampon and interval > 8, clamp to 8
+
     if (p === 'Tampon' && nextInterval > 8) {
       nextInterval = 8;
     }
@@ -79,7 +79,7 @@ export function PadReminderModal({ visible, onClose, isPeriodActive, isHeavyFlow
           </View>
 
           <ScrollView showsVerticalScrollIndicator={false} className="py-4">
-            {/* Enable Toggle */}
+
             <View className="flex-row items-center justify-between py-3 border-b border-gray-100 dark:border-dark-border">
               <View>
                 <Text className="text-sm font-bold text-text dark:text-dark-text">Change Reminders</Text>
@@ -94,7 +94,6 @@ export function PadReminderModal({ visible, onClose, isPeriodActive, isHeavyFlow
               />
             </View>
 
-            {/* Product Type Selector */}
             <Text className="text-xs font-extrabold text-muted dark:text-dark-muted tracking-wider uppercase mt-4 mb-2">
               Select Product Type
             </Text>
@@ -126,7 +125,6 @@ export function PadReminderModal({ visible, onClose, isPeriodActive, isHeavyFlow
               {limits.desc}
             </Text>
 
-            {/* Interval Controller */}
             <View className="bg-bg dark:bg-dark-bg p-4 rounded-2xl mb-4 border border-gray-100 dark:border-dark-border">
               <Text className="text-xs font-bold text-muted dark:text-dark-muted uppercase mb-1">
                 Reminder Interval
@@ -162,7 +160,6 @@ export function PadReminderModal({ visible, onClose, isPeriodActive, isHeavyFlow
               )}
             </View>
 
-            {/* Heavy Flow Adjustment */}
             <View className="flex-row items-center justify-between py-3 border-b border-gray-100 dark:border-dark-border">
               <View className="flex-1 pr-2">
                 <Text className="text-sm font-bold text-text dark:text-dark-text">Adjust on Heavy Flow Days</Text>
@@ -177,7 +174,6 @@ export function PadReminderModal({ visible, onClose, isPeriodActive, isHeavyFlow
               />
             </View>
 
-            {/* Quiet Hours */}
             <View className="flex-row items-center justify-between py-3 border-b border-gray-100 dark:border-dark-border">
               <View className="flex-1 pr-2">
                 <Text className="text-sm font-bold text-text dark:text-dark-text">Quiet Hours (10 PM – 7 AM)</Text>

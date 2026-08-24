@@ -67,7 +67,6 @@ export function useCycleData(targetDate: Date = new Date()) {
   const cycleCalculations = useMemo(() => {
     const today = new Date(targetDate);
 
-    // 1. Group contiguous period log dates into distinct cycle start dates
     const distinctCycleStarts: Date[] = [];
     const validDates = loggedPeriodDates
       .map((d) => parseISO(d))
@@ -78,7 +77,6 @@ export function useCycleData(targetDate: Date = new Date()) {
       const curr = validDates[i];
       const prev = i > 0 ? validDates[i - 1] : null;
 
-      // If gap from previous period day is more than 3 days, it's a new period cycle
       if (!prev || differenceInCalendarDays(curr, prev) > 3) {
         distinctCycleStarts.push(curr);
       }
@@ -88,18 +86,16 @@ export function useCycleData(targetDate: Date = new Date()) {
     let computedCycleLength = fallbackCycleLength;
     let cycleStartDate: Date;
 
-    // 2. Cold Start & Rolling Average Logic
     if (numCycles === 0) {
-      // --- Case 0: 0 logged periods (New user cold start) ---
-      // Fallback: estimate active cycle anchor from profile settings
-      cycleStartDate = subDays(today, 20); // Default anchor matching mock UI day 21
+
+      cycleStartDate = subDays(today, 20);
       computedCycleLength = fallbackCycleLength;
     } else if (numCycles === 1) {
-      // --- Case 1: Exactly 1 logged period ---
+
       cycleStartDate = distinctCycleStarts[0];
       computedCycleLength = fallbackCycleLength;
     } else {
-      // --- Case 2: Multiple logged periods (Calculate intervals) ---
+
       const intervals: number[] = [];
       for (let i = 1; i < distinctCycleStarts.length; i++) {
         const diff = differenceInCalendarDays(distinctCycleStarts[i], distinctCycleStarts[i - 1]);
@@ -111,11 +107,11 @@ export function useCycleData(targetDate: Date = new Date()) {
       if (intervals.length === 0) {
         computedCycleLength = fallbackCycleLength;
       } else if (intervals.length <= 6) {
-        // Average of all available (2-6 cycles)
+
         const sum = intervals.reduce((acc, val) => acc + val, 0);
         computedCycleLength = Math.round(sum / intervals.length);
       } else {
-        // Rolling average of only the last 6 cycles
+
         const last6 = intervals.slice(-6);
         const sum = last6.reduce((acc, val) => acc + val, 0);
         computedCycleLength = Math.round(sum / last6.length);
@@ -124,15 +120,12 @@ export function useCycleData(targetDate: Date = new Date()) {
       cycleStartDate = distinctCycleStarts[distinctCycleStarts.length - 1];
     }
 
-    // 3. Project Next Cycle Dates
     let nextPeriodDate = addDays(cycleStartDate, computedCycleLength);
 
-    // If latest logged period was in the past and multiple cycles have elapsed, advance projection
     while (isBefore(nextPeriodDate, today) && !isSameDay(nextPeriodDate, today)) {
       nextPeriodDate = addDays(nextPeriodDate, computedCycleLength);
     }
 
-    // Current Cycle Day
     const diffFromStart = differenceInCalendarDays(today, cycleStartDate);
     const currentCycleDay = diffFromStart >= 0
       ? (diffFromStart % computedCycleLength) + 1
@@ -141,18 +134,15 @@ export function useCycleData(targetDate: Date = new Date()) {
     const isPeriodToday = currentCycleDay <= periodLength;
     const periodDayNumber = isPeriodToday ? currentCycleDay : null;
 
-    // Ovulation and Fertile Window calculation
     const ovulationDate = subDays(nextPeriodDate, lutealPhase);
     const fertileWindowStart = subDays(ovulationDate, 5);
     const fertileWindowEnd = ovulationDate;
 
-    // Check if target date is in fertile or ovulation window
     const isFertileToday =
       (isSameDay(today, fertileWindowStart) || isSameDay(today, fertileWindowEnd) ||
        (isBefore(fertileWindowStart, today) && isBefore(today, fertileWindowEnd)));
     const isOvulationToday = isSameDay(today, ovulationDate);
 
-    // Pregnancy Chance calculation
     let pregnancyChance: 'Very low' | 'Low' | 'Medium' | 'High' = 'Very low';
     if (isOvulationToday || differenceInCalendarDays(ovulationDate, today) === 1) {
       pregnancyChance = 'High';
@@ -162,10 +152,8 @@ export function useCycleData(targetDate: Date = new Date()) {
       pregnancyChance = 'Low';
     }
 
-    // 4. Construct Immutable Cycle History
     const cycleHistory: CycleHistoryItem[] = [];
 
-    // Add current active cycle
     cycleHistory.push({
       label: 'Current cycle',
       period: periodLength,
@@ -176,7 +164,6 @@ export function useCycleData(targetDate: Date = new Date()) {
       endDate: formatDateKey(nextPeriodDate),
     });
 
-    // Add completed historical cycles from logged starts
     if (distinctCycleStarts.length > 1) {
       for (let i = distinctCycleStarts.length - 1; i >= 1; i--) {
         const start = distinctCycleStarts[i - 1];
@@ -193,7 +180,7 @@ export function useCycleData(targetDate: Date = new Date()) {
         });
       }
     } else {
-      // Fallback historical benchmarks for UI completeness when new
+
       cycleHistory.push(
         {
           label: 'Jul 2026',
@@ -247,7 +234,6 @@ export function useCycleData(targetDate: Date = new Date()) {
     };
   }, [loggedPeriodDates, targetDate, fallbackCycleLength, periodLength, lutealPhase]);
 
-  // Synchronize Push Notifications & Home Screen Widgets
   useEffect(() => {
     scheduleCycleAlerts(cycleCalculations.nextPeriodDate, cycleCalculations.fertileWindowStart).catch(console.warn);
     updateWidgetData({ currentCycleDay: cycleCalculations.currentCycleDay }).catch(console.warn);
@@ -263,7 +249,7 @@ export function useCycleData(targetDate: Date = new Date()) {
       if (cycleCalculations.loggedDatesSet.has(dateStr)) return true;
       const d = typeof date === 'string' ? parseISO(date) : date;
       const day = d.getDate();
-      return day >= 19 && day <= 23; // fallback calendar period days
+      return day >= 19 && day <= 23;
     },
     [cycleCalculations.loggedDatesSet]
   );

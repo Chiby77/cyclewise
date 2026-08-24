@@ -1,6 +1,5 @@
-// Shared color tokens — mirrors tailwind.config.js so SVG / LinearGradient
-// props (which can't take Tailwind classes) stay in sync with the rest of
-// the UI. If you rebrand, update both this file and tailwind.config.js.
+
+
 export const colors = {
   pinkPrimary: '#F06292',
   pinkDark: '#E91E63',
@@ -22,7 +21,6 @@ export const colors = {
   blueDark: '#1E88E5',
   blueLight: '#42A5F5',
 
-  // Dark Mode Tokens
   darkBg: '#121214',
   darkCard: '#1E1E22',
   darkText: '#F3F4F6',

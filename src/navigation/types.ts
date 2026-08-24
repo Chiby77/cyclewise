@@ -5,7 +5,7 @@ import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 export type TabParamList = {
   Home: undefined;
   Calendar: undefined;
-  LogTab: undefined; // dummy tab — pressing it opens the SymptomsLog modal instead
+  LogTab: undefined;
   Statistics: undefined;
   Profile: undefined;
 };
@@ -28,18 +28,12 @@ export type RootStackParamList = {
 };
 
 declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
+
   namespace ReactNavigation {
     interface RootParamList extends RootStackParamList {}
   }
 }
 
-/**
- * One navigation prop type used by every screen. It's a composite of the
- * tab navigator and the root stack, so both `navigation.navigate('Calendar')`
- * (a tab) and `navigation.navigate('CycleInfo')` (a stack screen pushed on
- * top of the tabs) type-check correctly no matter which screen calls it.
- */
 export type AppNavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<TabParamList>,
   NativeStackNavigationProp<RootStackParamList>

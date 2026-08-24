@@ -82,7 +82,7 @@ export function CycleInfoScreen() {
       </SafeAreaView>
 
       <ScrollView className="flex-1" contentContainerClassName="pb-4">
-        {/* Fertility chart */}
+
         <View className="bg-white mx-4 mt-3 rounded-2xl p-4 shadow-sm mb-3">
           <Text className="text-xs font-bold text-muted mb-2">Fertility</Text>
           <Svg width="100%" height={140} viewBox={`0 0 ${W} ${H + 20}`} preserveAspectRatio="none">
@@ -130,7 +130,6 @@ export function CycleInfoScreen() {
           </View>
         </View>
 
-        {/* Advice card */}
         <View className="mx-4 rounded-2xl p-4 mb-3" style={{ backgroundColor: '#B2DFDB' }}>
           <Mascot className="absolute right-0 top-2" />
           {ADVICE_SECTIONS.map((section) => (

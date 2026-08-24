@@ -85,7 +85,7 @@ export function ProfileScreen() {
   return (
     <View className="flex-1 bg-bg dark:bg-dark-bg">
       <ScrollView contentContainerClassName="pb-24" showsVerticalScrollIndicator={false}>
-        {/* Pink wave header */}
+
         <View className="overflow-hidden pb-10">
           <LinearGradient colors={themeColors.gradientHeader} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
             <SafeAreaView edges={['top']}>
@@ -127,7 +127,6 @@ export function ProfileScreen() {
           </Svg>
         </View>
 
-        {/* My Goal */}
         <View className="bg-card dark:bg-dark-card rounded-2xl mx-4 p-4 shadow-sm mb-3 border border-gray-100 dark:border-dark-border relative overflow-hidden">
           <View className="flex-row items-center justify-between mb-3">
             <Text className="font-extrabold text-text dark:text-dark-text text-base">My Goal</Text>
@@ -175,7 +174,6 @@ export function ProfileScreen() {
           ))}
         </View>
 
-        {/* Utilities */}
         <View className="bg-card dark:bg-dark-card rounded-2xl mx-4 p-4 shadow-sm mb-3 border border-gray-100 dark:border-dark-border">
           <Text className="font-extrabold text-text dark:text-dark-text mb-3 text-base">Utilities</Text>
           <View className="flex-row flex-wrap gap-4">
@@ -190,14 +188,12 @@ export function ProfileScreen() {
           </View>
         </View>
 
-        {/* Reminders Section */}
         <View className="bg-card dark:bg-dark-card rounded-2xl mx-4 p-4 shadow-sm mb-3 border border-gray-100 dark:border-dark-border relative overflow-hidden">
           <View className="flex-row items-center justify-between mb-2">
             <Text className="font-extrabold text-text dark:text-dark-text text-base">Reminders</Text>
             <Mascot className="scale-75 -mr-2" />
           </View>
 
-          {/* Menstrual Product Reminders */}
           <Pressable
             onPress={() => setPadModalVisible(true)}
             className="flex-row justify-between items-center py-3 border-b border-gray-100 dark:border-dark-border active:opacity-70"
@@ -214,7 +210,6 @@ export function ProfileScreen() {
             <Icon name={ICONS.chevronForward} size={14} color="#9CA3AF" />
           </Pressable>
 
-          {/* Grant Notification Permissions */}
           <Pressable
             onPress={handleGrantPermissions}
             className="flex-row justify-between items-center py-3 active:opacity-70"
@@ -238,7 +233,6 @@ export function ProfileScreen() {
           isPeriodActive={true}
         />
 
-        {/* Help */}
         <View className="bg-card dark:bg-dark-card rounded-2xl mx-4 p-4 shadow-sm mb-3 border border-gray-100 dark:border-dark-border">
           <Text className="font-extrabold text-text dark:text-dark-text mb-2 text-base">Help & Support</Text>
           {[
@@ -264,7 +258,6 @@ export function ProfileScreen() {
           ))}
         </View>
 
-        {/* Log out */}
         <Pressable
           onPress={signOut}
           className="bg-card dark:bg-dark-card rounded-2xl mx-4 p-4 shadow-sm mb-3 border border-gray-100 dark:border-dark-border flex-row items-center justify-center gap-2 active:opacity-80"

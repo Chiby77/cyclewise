@@ -9,9 +9,6 @@ const MODEL_NAME = 'openai/gpt-oss-120b';
 const SYSTEM_PROMPT =
   'You are CycleWise AI Health Assistant. Provide concise, empathetic menstrual health guidance. Always include a disclaimer.';
 
-/**
- * Sends a chat query to Groq AI service.
- */
 export async function sendGroqChat(
   userPrompt: string,
   history: ChatMessage[] = []
@@ -19,7 +16,7 @@ export async function sendGroqChat(
   const apiKey = process.env.EXPO_PUBLIC_GROQ_API_KEY;
 
   if (!apiKey) {
-    // Offline / Mock fallback response when API key is not configured
+
     await new Promise((resolve) => setTimeout(resolve, 800));
     return (
       "I'm here to support your cycle and wellness journey! During this phase of your cycle, maintaining good hydration, gentle stretching, and balanced nutrition rich in iron and magnesium can help ease your symptoms.\n\n" +

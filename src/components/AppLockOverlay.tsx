@@ -30,7 +30,6 @@ export function AppLockOverlay({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Check on initial load if lock is enabled
   useEffect(() => {
     if (lockEnabled) {
       setIsLocked(true);
@@ -38,7 +37,6 @@ export function AppLockOverlay({ children }: { children: React.ReactNode }) {
     }
   }, [lockEnabled, attemptUnlock]);
 
-  // Listen to background / foreground transitions
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (nextAppState: AppStateStatus) => {
       if (

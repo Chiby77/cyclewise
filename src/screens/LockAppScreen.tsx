@@ -17,7 +17,7 @@ export function LockAppScreen() {
 
   const toggleLock = async () => {
     if (!locked) {
-      // User is enabling lock -> check support & test authentication
+
       const support = await checkBiometricSupport();
       if (!support.hasHardware || !support.isEnrolled) {
         Alert.alert(
@@ -39,7 +39,7 @@ export function LockAppScreen() {
         updateProfile({ app_lock_enabled: true });
       }
     } else {
-      // User is disabling lock -> verify identity first
+
       const success = await authenticateWithBiometrics('Verify biometric identity to disable app lock');
       if (success) {
         updateProfile({ app_lock_enabled: false });

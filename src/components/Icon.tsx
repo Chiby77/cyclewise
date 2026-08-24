@@ -12,10 +12,6 @@ type Props = {
   style?: StyleProp<ViewStyle>;
 };
 
-/**
- * Central place all icons render through. Swapping the underlying icon set
- * later (e.g. to a custom SVG icon library) only requires changing this file.
- */
 export function Icon({ name, size = 20, color = '#1C1C1E', style }: Props) {
   return <Ionicons name={name} size={size} color={color} style={style} />;
 }

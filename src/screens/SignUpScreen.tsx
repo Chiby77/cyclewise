@@ -114,7 +114,6 @@ export function SignUpScreen() {
             </View>
           </View>
 
-          {/* Terms & Privacy Checkbox */}
           <View className="flex-row items-center gap-2.5 mb-4">
             <Pressable
               onPress={() => setTermsAccepted(!termsAccepted)}

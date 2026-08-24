@@ -69,7 +69,7 @@ export function WidgetsScreen() {
       <ScrollView className="flex-1 px-4" contentContainerClassName="py-3 pb-8">
         {tab === 'Period' && (
           <>
-            {/* Medium (2x2) */}
+
             <View className="bg-white rounded-2xl p-4 shadow-sm mb-3">
               <Text className="font-extrabold text-text mb-3">Medium (2x2)</Text>
               <View className="flex-row flex-wrap gap-3 mb-4">
@@ -95,7 +95,6 @@ export function WidgetsScreen() {
               </View>
             </View>
 
-            {/* Large (4x2) — chance of pregnancy slider */}
             <View className="bg-white rounded-2xl p-4 shadow-sm mb-3">
               <Mascot className="absolute right-0 top-2" />
               <Text className="font-extrabold text-text mb-3">Large (4x2)</Text>

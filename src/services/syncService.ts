@@ -64,9 +64,6 @@ class SyncService {
     this.currentUserId = userId;
   }
 
-  /**
-   * Pushes dirty local rows to Supabase and pulls remote updates.
-   */
   async syncPendingData(): Promise<void> {
     if (this.isSyncing || !this.isOnline || !isSupabaseConfigured || !this.currentUserId) {
       return;
@@ -74,10 +71,10 @@ class SyncService {
 
     this.isSyncing = true;
     try {
-      // 1. PUSH PHASE: Profiles
+
       const dirtyProfiles = getDirtyProfiles();
       for (const profile of dirtyProfiles) {
-        // Skip profiles that don't belong to the active authenticated user (e.g. offline mock user)
+
         if (profile.id !== this.currentUserId) {
           markProfileClean(profile.id);
           continue;
@@ -102,7 +99,6 @@ class SyncService {
         }
       }
 
-      // 2. PUSH PHASE: Daily Logs
       const dirtyLogs = getDirtyDailyLogs();
       for (const log of dirtyLogs) {
         if (log.user_id !== this.currentUserId) {
@@ -136,11 +132,9 @@ class SyncService {
         }
       }
 
-      // 3. PULL PHASE: Fetch remote changes since last sync
       const lastSync = await AsyncStorage.getItem(LAST_SYNC_KEY);
       const syncTimestamp = new Date().toISOString();
 
-      // Pull Profiles
       let profileQuery = supabase.from('profiles').select('*').eq('id', this.currentUserId);
       if (lastSync) {
         profileQuery = profileQuery.gt('updated_at', lastSync);
@@ -160,12 +154,11 @@ class SyncService {
               app_lock_enabled: Boolean(rp.app_lock_enabled),
               updated_at: rp.updated_at,
             },
-            0 // is_dirty = 0 (clean remote data)
+            0
           );
         }
       }
 
-      // Pull Daily Logs
       let logsQuery = supabase.from('daily_logs').select('*').eq('user_id', this.currentUserId);
       if (lastSync) {
         logsQuery = logsQuery.gt('updated_at', lastSync);
@@ -194,7 +187,7 @@ class SyncService {
               note: rl.note,
               updated_at: rl.updated_at,
             },
-            0 // is_dirty = 0
+            0
           );
         }
       }
@@ -208,9 +201,6 @@ class SyncService {
     }
   }
 
-  /**
-   * Complete data restore on login or new device.
-   */
   async restoreUserData(userId: string): Promise<void> {
     this.setCurrentUser(userId);
 
@@ -219,7 +209,7 @@ class SyncService {
     }
 
     try {
-      // 1. Fetch remote profile
+
       const { data: remoteProfile } = await supabase
         .from('profiles')
         .select('*')
@@ -242,14 +232,13 @@ class SyncService {
           0
         );
       } else {
-        // Ensure local default exists
+
         const local = getLocalProfile(userId);
         if (!local) {
           upsertLocalProfile({ id: userId }, 1);
         }
       }
 
-      // 2. Fetch all daily logs
       const { data: remoteLogs } = await supabase
         .from('daily_logs')
         .select('*')

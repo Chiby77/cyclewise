@@ -28,7 +28,6 @@ import { useAuth } from '@/context/AuthContext';
 const Tab = createBottomTabNavigator<TabParamList>();
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-/** Never actually rendered — pressing this tab is intercepted by CustomTabBar. */
 function LogTabPlaceholder() {
   return <View />;
 }

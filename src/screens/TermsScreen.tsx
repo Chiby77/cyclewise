@@ -10,7 +10,7 @@ export function TermsScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-bg dark:bg-dark-bg">
-      {/* Header */}
+
       <View className="flex-row items-center justify-between px-4 py-3 bg-card dark:bg-dark-card border-b border-gray-200 dark:border-dark-border">
         <Pressable
           onPress={() => navigation.goBack()}

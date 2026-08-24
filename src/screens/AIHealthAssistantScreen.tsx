@@ -95,7 +95,7 @@ export function AIHealthAssistantScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
       >
-        {/* Header */}
+
         <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-dark-border bg-card dark:bg-dark-card">
           <Pressable onPress={() => navigation.goBack()} className="p-1 active:opacity-70">
             <Icon name={ICONS.back} size={22} color={colors.pinkPrimary} />
@@ -123,7 +123,6 @@ export function AIHealthAssistantScreen() {
           </Pressable>
         </View>
 
-        {/* Chat History */}
         <View className="flex-1 bg-bg dark:bg-dark-bg">
           <ScrollView
             ref={scrollViewRef}
@@ -131,7 +130,7 @@ export function AIHealthAssistantScreen() {
             contentContainerClassName="py-4 pb-4"
             keyboardShouldPersistTaps="handled"
           >
-            {/* Medical Disclaimer Banner */}
+
             <View className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-2xl p-3.5 mb-4 flex-row items-start gap-2.5">
               <Icon name={ICONS.warning} size={18} color="#D97706" />
               <Text className="text-xs text-amber-900 dark:text-amber-200 flex-1 font-medium leading-relaxed">
@@ -140,7 +139,6 @@ export function AIHealthAssistantScreen() {
               </Text>
             </View>
 
-            {/* Message bubbles */}
             {messages.map((msg, index) => {
               const isUser = msg.role === 'user';
               return (
@@ -183,7 +181,6 @@ export function AIHealthAssistantScreen() {
               </View>
             )}
 
-            {/* Quick suggestions when history is short */}
             {messages.length <= 2 && !isLoading && (
               <View className="mt-4">
                 <Text className="text-xs font-bold text-muted dark:text-dark-muted mb-2">Suggested questions:</Text>
@@ -203,7 +200,6 @@ export function AIHealthAssistantScreen() {
           </ScrollView>
         </View>
 
-        {/* Fixed Input Bar above Keyboard */}
         <View
           className="bg-card dark:bg-dark-card border-t border-gray-100 dark:border-dark-border px-4 py-2"
           style={{ paddingBottom: Math.max(insets.bottom, 8) }}

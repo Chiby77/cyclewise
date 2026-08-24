@@ -7,7 +7,6 @@ type Props = {
   className?: string;
 };
 
-/** The little bunny/mouse mascot that shows up on several cards throughout the app. */
 export function Mascot({ style, className }: Props) {
   return (
     <View style={style} className={className} pointerEvents="none">

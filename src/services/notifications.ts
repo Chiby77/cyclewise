@@ -5,9 +5,6 @@ const WATER_REMINDER_ID = 'cyclewise-water-reminder';
 const PERIOD_ALERT_ID = 'cyclewise-period-alert';
 const FERTILE_ALERT_ID = 'cyclewise-fertile-alert';
 
-/**
- * Configure foreground notification display behavior.
- */
 export function setupNotifications() {
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
@@ -29,9 +26,6 @@ export function setupNotifications() {
   }
 }
 
-/**
- * Requests push notification permissions on the device.
- */
 export async function requestNotificationPermissions(): Promise<boolean> {
   try {
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
@@ -49,18 +43,13 @@ export async function requestNotificationPermissions(): Promise<boolean> {
   }
 }
 
-/**
- * Schedules a daily water intake reminder.
- */
 export async function scheduleWaterReminder(): Promise<void> {
   try {
     const hasPermission = await requestNotificationPermissions();
     if (!hasPermission) return;
 
-    // Cancel existing water reminder
     await Notifications.cancelScheduledNotificationAsync(WATER_REMINDER_ID).catch(() => {});
 
-    // Schedule daily reminder at 10:00 AM
     await Notifications.scheduleNotificationAsync({
       identifier: WATER_REMINDER_ID,
       content: {
@@ -80,9 +69,6 @@ export async function scheduleWaterReminder(): Promise<void> {
   }
 }
 
-/**
- * Schedules period and fertile window alerts before predicted dates.
- */
 export async function scheduleCycleAlerts(
   nextPeriodDate: Date,
   nextFertileDate: Date
@@ -91,13 +77,11 @@ export async function scheduleCycleAlerts(
     const hasPermission = await requestNotificationPermissions();
     if (!hasPermission) return;
 
-    // Cancel previous alerts
     await Notifications.cancelScheduledNotificationAsync(PERIOD_ALERT_ID).catch(() => {});
     await Notifications.cancelScheduledNotificationAsync(FERTILE_ALERT_ID).catch(() => {});
 
     const now = new Date();
 
-    // 1. Period Alert: 2 days before next period at 9:00 AM
     const periodAlertDate = new Date(nextPeriodDate);
     periodAlertDate.setDate(periodAlertDate.getDate() - 2);
     periodAlertDate.setHours(9, 0, 0, 0);
@@ -118,7 +102,6 @@ export async function scheduleCycleAlerts(
       });
     }
 
-    // 2. Fertile Alert: 1 day before fertile window at 9:00 AM
     const fertileAlertDate = new Date(nextFertileDate);
     fertileAlertDate.setDate(fertileAlertDate.getDate() - 1);
     fertileAlertDate.setHours(9, 0, 0, 0);

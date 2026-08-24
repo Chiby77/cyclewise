@@ -16,7 +16,7 @@ import {
 } from '@/services/padReminderService';
 
 type HealthContextValue = {
-  selectedDate: string; // YYYY-MM-DD
+  selectedDate: string;
   setSelectedDate: (date: string) => void;
   currentLog: DailyLog | null;
   periodDays: string[];

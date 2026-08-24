@@ -35,7 +35,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [customNameState, setCustomNameState] = useState<string | null>(null);
 
-  // Initialize SQLite & Sync Service on App Startup
   useEffect(() => {
     try {
       initDatabase();
@@ -49,7 +48,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // Check active Supabase session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -78,7 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const handleUserAuthenticated = async (authenticatedUser: User, customName?: string) => {
-    // Clear offline mock user dirty state so it doesn't push to Supabase
+
     markProfileClean(MOCK_LOCAL_USER_ID);
     syncService.setCurrentUser(authenticatedUser.id);
 
@@ -89,7 +87,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       authenticatedUser.email?.split('@')[0] ||
       'CycleWise User';
 
-    // Ensure local profile row in SQLite
     const existing = getLocalProfile(authenticatedUser.id);
     if (!existing) {
       upsertLocalProfile({
@@ -104,7 +101,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
     }
 
-    // Restore remote history and sync
     await syncService.restoreUserData(authenticatedUser.id);
     await syncService.syncPendingData();
   };
@@ -122,7 +118,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setError(null);
 
     if (!isSupabaseConfigured) {
-      // Local fallback mode
+
       const name = email.split('@')[0];
       setLocalFallbackUser({ email, name });
       upsertLocalProfile({

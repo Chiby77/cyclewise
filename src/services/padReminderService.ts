@@ -7,12 +7,12 @@ export type ProductType = 'Pad' | 'Tampon' | 'Cup';
 export interface PadReminderConfig {
   enabled: boolean;
   productType: ProductType;
-  intervalHours: number; // Pad: 1-8h (default 4), Tampon: 1-8h (default 4, MAX 8), Cup: 1-12h (default 8)
+  intervalHours: number;
   scaleForHeavyFlow: boolean;
   quietHoursEnabled: boolean;
-  quietStartHour: number; // e.g. 22 (10 PM)
-  quietEndHour: number; // e.g. 7 (7 AM)
-  lastChangedTimestamp: number | null; // epoch ms
+  quietStartHour: number;
+  quietEndHour: number;
+  lastChangedTimestamp: number | null;
 }
 
 const STORAGE_KEY = '@cyclewise_pad_reminder_config';
@@ -36,9 +36,6 @@ export const PRODUCT_LIMITS: Record<ProductType, { default: number; min: number;
   Cup: { default: 8, min: 2, max: 12, desc: 'Can be worn up to 12 hours depending on flow.' },
 };
 
-/**
- * Loads the user's pad/tampon reminder configuration.
- */
 export async function getPadReminderConfig(): Promise<PadReminderConfig> {
   try {
     const raw = await AsyncStorage.getItem(STORAGE_KEY);
@@ -47,7 +44,7 @@ export async function getPadReminderConfig(): Promise<PadReminderConfig> {
     return {
       ...DEFAULT_CONFIG,
       ...parsed,
-      // Enforce Tampon 8-hour safety ceiling
+
       intervalHours:
         parsed.productType === 'Tampon'
           ? Math.min(parsed.intervalHours || 4, 8)
@@ -59,9 +56,6 @@ export async function getPadReminderConfig(): Promise<PadReminderConfig> {
   }
 }
 
-/**
- * Saves the reminder configuration and reschedules notifications.
- */
 export async function savePadReminderConfig(
   config: Partial<PadReminderConfig>,
   isPeriodActive: boolean,
@@ -73,7 +67,6 @@ export async function savePadReminderConfig(
     ...config,
   };
 
-  // Hard safety ceiling check for tampons
   if (next.productType === 'Tampon' && next.intervalHours > 8) {
     next.intervalHours = 8;
   }
@@ -89,9 +82,6 @@ export async function savePadReminderConfig(
   return next;
 }
 
-/**
- * Cancels all scheduled pad/tampon notifications.
- */
 export async function cancelPadReminders(): Promise<void> {
   try {
     await Notifications.cancelScheduledNotificationAsync(NOTIFICATION_ID_ROUTINE).catch(() => {});
@@ -101,21 +91,15 @@ export async function cancelPadReminders(): Promise<void> {
   }
 }
 
-/**
- * Checks if a given Date falls within quiet hours.
- */
 function isDuringQuietHours(date: Date, startHour: number, endHour: number): boolean {
   const hour = date.getHours();
   if (startHour > endHour) {
-    // Overnight e.g. 22:00 to 07:00
+
     return hour >= startHour || hour < endHour;
   }
   return hour >= startHour && hour < endHour;
 }
 
-/**
- * Schedules the next change reminder based on last changed time.
- */
 export async function scheduleNextChangeReminder(
   config: PadReminderConfig,
   isHeavyFlow: boolean = false
@@ -129,7 +113,6 @@ export async function scheduleNextChangeReminder(
     const lastTime = config.lastChangedTimestamp || Date.now();
     let effectiveIntervalHours = config.intervalHours;
 
-    // Auto-scale down on heavy flow days (e.g. 1 hour earlier, min 1h)
     if (config.scaleForHeavyFlow && isHeavyFlow && effectiveIntervalHours > 1) {
       effectiveIntervalHours = Math.max(1, effectiveIntervalHours - 1);
     }
@@ -137,9 +120,8 @@ export async function scheduleNextChangeReminder(
     const nextFireDate = new Date(lastTime + effectiveIntervalHours * 60 * 60 * 1000);
     const now = new Date();
 
-    // 1. Routine Reminder
     if (nextFireDate > now) {
-      // Check quiet hours
+
       const inQuietHours =
         config.quietHoursEnabled &&
         isDuringQuietHours(nextFireDate, config.quietStartHour, config.quietEndHour);
@@ -161,7 +143,7 @@ export async function scheduleNextChangeReminder(
         });
       }
     } else if (config.lastChangedTimestamp) {
-      // Catch-up: interval already elapsed when user changed settings mid-cycle
+
       await Notifications.scheduleNotificationAsync({
         identifier: NOTIFICATION_ID_ROUTINE,
         content: {

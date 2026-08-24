@@ -6,9 +6,6 @@ export type BiometricStatus = {
   supportedTypes: LocalAuthentication.AuthenticationType[];
 };
 
-/**
- * Checks hardware support and biometric enrollment on the device.
- */
 export async function checkBiometricSupport(): Promise<BiometricStatus> {
   try {
     const hasHardware = await LocalAuthentication.hasHardwareAsync();
@@ -30,9 +27,6 @@ export async function checkBiometricSupport(): Promise<BiometricStatus> {
   }
 }
 
-/**
- * Prompts the user for biometric authentication (Face ID, Touch ID, or device passcode).
- */
 export async function authenticateWithBiometrics(
   promptMessage = 'Unlock CycleWise'
 ): Promise<boolean> {
@@ -40,7 +34,7 @@ export async function authenticateWithBiometrics(
     const { hasHardware, isEnrolled } = await checkBiometricSupport();
 
     if (!hasHardware || !isEnrolled) {
-      // If hardware is unavailable or not enrolled, allow access
+
       return true;
     }
 

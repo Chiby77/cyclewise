@@ -21,11 +21,6 @@ const ICON_PAIRS = {
   Profile: [ICONS.profile, ICONS.profileActive],
 } as const;
 
-/**
- * Recreates the original BottomNav: four regular tabs plus a raised teal
- * "+" button in the middle. The middle button doesn't switch tabs — it
- * pushes the SymptomsLog screen as a modal, same as the original design.
- */
 export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
 

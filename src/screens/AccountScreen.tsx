@@ -12,11 +12,10 @@ export function AccountScreen() {
   const { userEmail, userName, authProvider, updateProfileName, changePassword, signOut } = useAuth();
   const { themePreference, setThemePreference } = useTheme();
 
-  // Split full name into first name & surname for editing
   const nameParts = (userName || '').split(' ');
   const [firstName, setFirstName] = useState(nameParts[0] || '');
   const [surname, setSurname] = useState(nameParts.slice(1).join(' ') || '');
-  
+
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isSavingName, setIsSavingName] = useState(false);
@@ -83,7 +82,7 @@ export function AccountScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-bg dark:bg-dark-bg">
-      {/* Header */}
+
       <View className="flex-row items-center justify-between px-4 py-3 bg-card dark:bg-dark-card border-b border-gray-200 dark:border-dark-border">
         <Pressable
           onPress={() => navigation.goBack()}
@@ -97,13 +96,12 @@ export function AccountScreen() {
       </View>
 
       <ScrollView className="flex-1 p-4" showsVerticalScrollIndicator={false}>
-        {/* Profile Info Section */}
+
         <View className="bg-card dark:bg-dark-card rounded-2xl p-4 mb-4 border border-gray-100 dark:border-dark-border gap-3">
           <Text className="text-xs font-bold text-muted dark:text-dark-muted uppercase tracking-wider">
             Personal Information
           </Text>
 
-          {/* First Name */}
           <View className="gap-1">
             <Text className="text-xs font-bold text-text dark:text-dark-text">First Name</Text>
             <TextInput
@@ -115,7 +113,6 @@ export function AccountScreen() {
             />
           </View>
 
-          {/* Surname */}
           <View className="gap-1">
             <Text className="text-xs font-bold text-text dark:text-dark-text">Surname</Text>
             <TextInput
@@ -148,7 +145,6 @@ export function AccountScreen() {
           </Pressable>
         </View>
 
-        {/* Account Credentials & Email */}
         <View className="bg-card dark:bg-dark-card rounded-2xl p-4 mb-4 border border-gray-100 dark:border-dark-border gap-3">
           <Text className="text-xs font-bold text-muted dark:text-dark-muted uppercase tracking-wider">
             Account Email
@@ -168,7 +164,6 @@ export function AccountScreen() {
           </View>
         </View>
 
-        {/* Change Password Section (Password Auth Only) */}
         {authProvider === 'password' && (
           <View className="bg-card dark:bg-dark-card rounded-2xl p-4 mb-4 border border-gray-100 dark:border-dark-border gap-3">
             <Text className="text-xs font-bold text-muted dark:text-dark-muted uppercase tracking-wider">
@@ -221,7 +216,6 @@ export function AccountScreen() {
           </View>
         )}
 
-        {/* Theme Preferences */}
         <View className="bg-card dark:bg-dark-card rounded-2xl p-4 mb-4 border border-gray-100 dark:border-dark-border gap-3">
           <Text className="text-xs font-bold text-muted dark:text-dark-muted uppercase tracking-wider">
             Appearance & Theme
@@ -251,7 +245,6 @@ export function AccountScreen() {
           </View>
         </View>
 
-        {/* Legal & App Links */}
         <View className="bg-card dark:bg-dark-card rounded-2xl p-2 mb-6 border border-gray-100 dark:border-dark-border">
           <Pressable
             onPress={() => navigation.navigate('Terms')}
