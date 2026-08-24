@@ -22,7 +22,7 @@ import {
   type PadReminderConfig,
 } from '@/services/padReminderService';
 
-const CIRCUMFERENCE = 2 * Math.PI * 80;
+const CIRCUMFERENCE = 2 * Math.PI * 82;
 
 export function HomeScreen() {
   const navigation = useNavigation<AppNavigationProp>();
@@ -210,41 +210,47 @@ export function HomeScreen() {
           /* Standard Cycle Wheel (Track My Cycle) */
           <View className="items-center justify-center my-2">
             <View className="items-center justify-center">
-              <Svg width={160} height={160} viewBox="0 0 180 180">
-                <Circle cx={90} cy={90} r={80} fill="none" stroke={isDark ? '#2A2A30' : colors.pinkLight} strokeWidth={14} />
+              <Svg width={190} height={190} viewBox="0 0 200 200">
                 <Circle
-                  cx={90}
-                  cy={90}
-                  r={80}
+                  cx={100}
+                  cy={100}
+                  r={82}
+                  fill="none"
+                  stroke={isDark ? '#2A2A30' : colors.pinkLight}
+                  strokeWidth={10}
+                />
+                <Circle
+                  cx={100}
+                  cy={100}
+                  r={82}
                   fill="none"
                   stroke={colors.pinkPrimary}
-                  strokeWidth={14}
+                  strokeWidth={10}
                   strokeDasharray={`${periodArc} ${CIRCUMFERENCE - periodArc}`}
-                  strokeDashoffset={125}
                   strokeLinecap="round"
                   rotation={-90}
-                  origin="90, 90"
+                  origin="100, 100"
                 />
                 <Circle
-                  cx={90}
-                  cy={90}
-                  r={80}
+                  cx={100}
+                  cy={100}
+                  r={82}
                   fill="none"
                   stroke={colors.teal}
-                  strokeWidth={10}
+                  strokeWidth={8}
                   strokeDasharray={`${fertileArc} ${CIRCUMFERENCE - fertileArc}`}
-                  strokeDashoffset={CIRCUMFERENCE - periodArc - 30}
+                  strokeDashoffset={CIRCUMFERENCE - (((cycleLength || 28) - 14) / (cycleLength || 28)) * CIRCUMFERENCE}
                   strokeLinecap="round"
                   rotation={-90}
-                  origin="90, 90"
+                  origin="100, 100"
                 />
               </Svg>
-              <View className="absolute items-center">
-                <Text className="text-2xl font-extrabold text-text dark:text-dark-text">Day {currentCycleDay}</Text>
-                <Text className="text-xs font-bold text-pink-primary">
+              <View className="absolute items-center justify-center px-4">
+                <Text className="text-3xl font-black text-text dark:text-dark-text tracking-tight">Day {currentCycleDay}</Text>
+                <Text className="text-xs font-extrabold text-pink-primary mt-0.5">
                   {periodDayNumber ? `Period Day ${periodDayNumber}` : 'Cycle Day ' + currentCycleDay}
                 </Text>
-                <Text className="text-[10px] font-semibold text-muted dark:text-dark-muted mt-0.5 text-center px-6">
+                <Text className="text-[11px] font-semibold text-muted dark:text-dark-muted mt-1 text-center max-w-[130px]" numberOfLines={2}>
                   {pregnancyChance} chance to get pregnant
                 </Text>
               </View>

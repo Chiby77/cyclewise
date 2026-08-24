@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
 import { useColorScheme as useRNColorScheme } from 'react-native';
+import { useColorScheme as useNativeWindColorScheme } from 'nativewind';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getThemeColors } from '@/theme/colors';
 
@@ -17,18 +18,21 @@ const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const systemScheme = useRNColorScheme();
+  const { setColorScheme } = useNativeWindColorScheme();
   const [themePreference, setThemePreferenceState] = useState<ThemePreference>('system');
 
   useEffect(() => {
     AsyncStorage.getItem(THEME_STORAGE_KEY).then((saved) => {
       if (saved === 'light' || saved === 'dark' || saved === 'system') {
         setThemePreferenceState(saved);
+        setColorScheme(saved);
       }
     });
-  }, []);
+  }, [setColorScheme]);
 
   const setThemePreference = async (pref: ThemePreference) => {
     setThemePreferenceState(pref);
+    setColorScheme(pref);
     await AsyncStorage.setItem(THEME_STORAGE_KEY, pref);
   };
 

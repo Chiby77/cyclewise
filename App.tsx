@@ -5,7 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { RootNavigator } from '@/navigation/RootNavigator';
 import { AuthProvider } from '@/context/AuthContext';
-import { ThemeProvider } from '@/context/ThemeContext';
+import { ThemeProvider, useTheme } from '@/context/ThemeContext';
 import { HealthProvider } from '@/context/HealthContext';
 import { AppLockOverlay } from '@/components/AppLockOverlay';
 import { setupNotifications, scheduleWaterReminder } from '@/services/notifications';
@@ -16,16 +16,28 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 
 initSentry();
 
+function MainApp() {
+  const { isDark } = useTheme();
+  return (
+    <>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
+      <NavigationContainer>
+        <AppLockOverlay>
+          <RootNavigator />
+        </AppLockOverlay>
+      </NavigationContainer>
+    </>
+  );
+}
+
 function App() {
   const [appIsReady, setAppIsReady] = useState(false);
 
   useEffect(() => {
     async function prepareApp() {
       try {
-
         setupNotifications();
         await scheduleWaterReminder();
-
         await new Promise((resolve) => setTimeout(resolve, 300));
       } catch (error) {
         console.warn('[App] Error during initialization:', error);
@@ -47,12 +59,7 @@ function App() {
       <ThemeProvider>
         <AuthProvider>
           <HealthProvider>
-            <StatusBar style="auto" />
-            <AppLockOverlay>
-              <NavigationContainer>
-                <RootNavigator />
-              </NavigationContainer>
-            </AppLockOverlay>
+            <MainApp />
           </HealthProvider>
         </AuthProvider>
       </ThemeProvider>
