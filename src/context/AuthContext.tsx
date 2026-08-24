@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured, performGoogleOAuth } from '@/lib/supabase';
-import { initDatabase, getLocalProfile, upsertLocalProfile } from '@/db/sqlite';
+import { initDatabase, getLocalProfile, upsertLocalProfile, markProfileClean } from '@/db/sqlite';
 import { syncService } from '@/services/syncService';
 
 type AuthContextValue = {
@@ -74,6 +74,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const handleUserAuthenticated = async (authenticatedUser: User, customName?: string) => {
+    // Clear offline mock user dirty state so it doesn't push to Supabase
+    markProfileClean(MOCK_LOCAL_USER_ID);
     syncService.setCurrentUser(authenticatedUser.id);
 
     const name =

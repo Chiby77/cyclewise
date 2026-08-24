@@ -77,6 +77,12 @@ class SyncService {
       // 1. PUSH PHASE: Profiles
       const dirtyProfiles = getDirtyProfiles();
       for (const profile of dirtyProfiles) {
+        // Skip profiles that don't belong to the active authenticated user (e.g. offline mock user)
+        if (profile.id !== this.currentUserId) {
+          markProfileClean(profile.id);
+          continue;
+        }
+
         const { error } = await supabase.from('profiles').upsert({
           id: profile.id,
           full_name: profile.full_name,
@@ -99,6 +105,9 @@ class SyncService {
       // 2. PUSH PHASE: Daily Logs
       const dirtyLogs = getDirtyDailyLogs();
       for (const log of dirtyLogs) {
+        if (log.user_id !== this.currentUserId) {
+          continue;
+        }
         const { error } = await supabase.from('daily_logs').upsert({
           id: log.id,
           user_id: log.user_id,
