@@ -9,40 +9,24 @@ import { colors } from '@/theme/colors';
 import type { AppNavigationProp } from '@/navigation/types';
 import { useHealth } from '@/context/HealthContext';
 
+import { getMonthGrid, formatMonthYear, formatDateKey } from '@/utils/calendarGrid';
+
 const HEADERS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
-const JUL_DAYS: (number | null)[][] = [
-  [null, null, 1, 2, 3, 4, 5],
-  [6, 7, 8, 9, 10, 11, 12],
-  [13, 14, 15, 16, 17, 18, 19],
-  [20, 21, 22, 23, 24, 25, null],
-  [26, 27, 28, 29, 30, 31, null],
-];
-
-const AUG_DAYS: (number | null)[][] = [
-  [null, null, null, null, null, null, 1],
-  [2, 3, 4, 5, 6, 7, 8],
-  [9, 10, 11, 12, 13, 14, 15],
-  [16, 17, 18, 19, 20, 21, 22],
-  [23, 24, 25, 26, 27, 28, 29],
-  [30, 31, null, null, null, null, null],
-];
-
 function MonthGrid({
-  label,
-  month,
   year,
-  weeks,
+  monthIndex,
   selected,
   onToggle,
 }: {
-  label: string;
-  month: string;
-  year: string;
-  weeks: (number | null)[][];
+  year: number;
+  monthIndex: number;
   selected: Set<string>;
   onToggle: (key: string) => void;
 }) {
+  const weeks = getMonthGrid(year, monthIndex);
+  const label = formatMonthYear(year, monthIndex);
+
   return (
     <View className="mb-4 bg-card dark:bg-dark-card p-4 rounded-2xl border border-gray-100 dark:border-dark-border">
       <Text className="text-center font-extrabold text-text dark:text-dark-text mb-3">{label}</Text>
@@ -57,7 +41,7 @@ function MonthGrid({
         <View key={wi} className="flex-row mb-1">
           {week.map((day, di) => {
             if (!day) return <View key={di} className="flex-1" />;
-            const key = `${year}-${month}-${String(day).padStart(2, '0')}`;
+            const key = formatDateKey(year, monthIndex, day);
             const isSel = selected.has(key);
             return (
               <View key={di} className="flex-1 items-center py-0.5">
@@ -87,6 +71,17 @@ export function LogPeriodScreen() {
 
   const [selected, setSelected] = useState<Set<string>>(() => new Set(periodDays));
 
+  // Display previous month, current month, and next month
+  const monthsToDisplay = React.useMemo(() => {
+    const now = new Date();
+    const result: { year: number; monthIndex: number }[] = [];
+    for (let offset = -1; offset <= 1; offset++) {
+      const d = new Date(now.getFullYear(), now.getMonth() + offset, 1);
+      result.push({ year: d.getFullYear(), monthIndex: d.getMonth() });
+    }
+    return result;
+  }, []);
+
   const toggle = (key: string) => {
     setSelected((prev) => {
       const next = new Set(prev);
@@ -114,8 +109,9 @@ export function LogPeriodScreen() {
           <Text className="text-base font-extrabold text-text dark:text-dark-text">Log Period</Text>
           <Pressable
             onPress={() => {
-              const today = new Date().toISOString().split('T')[0];
-              toggle(today);
+              const now = new Date();
+              const todayKey = formatDateKey(now.getFullYear(), now.getMonth(), now.getDate());
+              toggle(todayKey);
             }}
             className="px-3 py-1.5 rounded-full border border-gray-200 dark:border-dark-border active:opacity-70"
           >
@@ -128,22 +124,15 @@ export function LogPeriodScreen() {
         <View className="flex-row justify-end mb-2">
           <Mascot />
         </View>
-        <MonthGrid
-          label="July 2026"
-          month="07"
-          year="2026"
-          weeks={JUL_DAYS}
-          selected={selected}
-          onToggle={toggle}
-        />
-        <MonthGrid
-          label="August 2026"
-          month="08"
-          year="2026"
-          weeks={AUG_DAYS}
-          selected={selected}
-          onToggle={toggle}
-        />
+        {monthsToDisplay.map(({ year, monthIndex }) => (
+          <MonthGrid
+            key={`${year}-${monthIndex}`}
+            year={year}
+            monthIndex={monthIndex}
+            selected={selected}
+            onToggle={toggle}
+          />
+        ))}
       </ScrollView>
 
       <SafeAreaView edges={['bottom']} className="absolute bottom-0 left-0 right-0 bg-card dark:bg-dark-card border-t border-gray-100 dark:border-dark-border px-4 pt-4">

@@ -15,6 +15,13 @@ import { useCycleData, formatDateKey } from '@/hooks/useCycleData';
 import { useHealth } from '@/context/HealthContext';
 import { useTheme } from '@/context/ThemeContext';
 
+import { PadReminderModal } from '@/components/PadReminderModal';
+import {
+  getPadReminderConfig,
+  logProductChange,
+  type PadReminderConfig,
+} from '@/services/padReminderService';
+
 const CIRCUMFERENCE = 2 * Math.PI * 80; // r = 80
 
 export function HomeScreen() {
@@ -36,9 +43,41 @@ export function HomeScreen() {
   } = useCycleData(new Date());
 
   const [widgetPage, setWidgetPage] = useState(0);
+  const [padModalVisible, setPadModalVisible] = useState(false);
+  const [padConfig, setPadConfig] = useState<PadReminderConfig | null>(null);
 
   // Active user goal mode
   const activeGoal = profile?.goal || 'Track My Cycle';
+
+  const isPeriodActiveToday = isDatePeriod(todayStr) || Boolean(periodDayNumber);
+  const isHeavyFlow = currentLog?.flow === 'Heavy' || currentLog?.flow === 'Blood Clots';
+
+  React.useEffect(() => {
+    getPadReminderConfig().then(setPadConfig);
+  }, []);
+
+  const handleLogChange = async () => {
+    const updated = await logProductChange(padConfig?.productType, isPeriodActiveToday, isHeavyFlow);
+    setPadConfig(updated);
+  };
+
+  // Compute wear time info
+  const wearTimeInfo = useMemo(() => {
+    if (!padConfig?.lastChangedTimestamp) {
+      return { elapsedText: 'Not logged today', hoursElapsed: 0, isNearingCeiling: false };
+    }
+    const diffMs = Date.now() - padConfig.lastChangedTimestamp;
+    const diffHours = diffMs / (1000 * 60 * 60);
+    const diffMinutes = Math.floor((diffMs / (1000 * 60)) % 60);
+    const hours = Math.floor(diffHours);
+
+    const elapsedText =
+      hours > 0 ? `${hours}h ${diffMinutes}m ago` : `${diffMinutes}m ago`;
+
+    const isNearingCeiling = padConfig.productType === 'Tampon' && diffHours >= 6;
+
+    return { elapsedText, hoursElapsed: diffHours, isNearingCeiling };
+  }, [padConfig]);
 
   // Dynamic weekly strip
   const { weekDays, weekDates, rawDates } = useMemo(() => {
@@ -263,6 +302,53 @@ export function HomeScreen() {
 
       {/* Scrollable body */}
       <ScrollView className="flex-1 px-4" contentContainerClassName="py-3 pb-24" showsVerticalScrollIndicator={false}>
+        {/* Active Period Pad / Tampon Tracker Card */}
+        {isPeriodActiveToday && (
+          <View className="bg-card dark:bg-dark-card rounded-2xl p-4 shadow-sm mb-3 border border-pink-light dark:border-dark-border">
+            <View className="flex-row items-center justify-between mb-2">
+              <View className="flex-row items-center gap-2">
+                <Icon name={ICONS.flowMedium} size={18} color={colors.pinkPrimary} />
+                <Text className="font-extrabold text-text dark:text-dark-text text-sm">
+                  {padConfig?.productType || 'Pad'} Change Tracker
+                </Text>
+              </View>
+              <Pressable onPress={() => setPadModalVisible(true)} className="p-1 active:opacity-70">
+                <Icon name="options-outline" size={18} color={colors.pinkPrimary} />
+              </Pressable>
+            </View>
+
+            <View className="flex-row items-center justify-between py-1">
+              <View>
+                <Text className="text-xs text-muted dark:text-dark-muted font-semibold">Last changed:</Text>
+                <Text className="text-base font-extrabold text-text dark:text-dark-text mt-0.5">
+                  {wearTimeInfo.elapsedText}
+                </Text>
+              </View>
+              <Pressable
+                onPress={handleLogChange}
+                className="px-4 py-2.5 rounded-full bg-pink-primary items-center active:opacity-80 shadow-sm"
+              >
+                <Text className="text-white text-xs font-bold">✓ Logged a change</Text>
+              </Pressable>
+            </View>
+
+            {wearTimeInfo.isNearingCeiling && (
+              <View className="mt-2 p-2 bg-red-50 dark:bg-red-950/40 rounded-xl border border-red-200 dark:border-red-800 flex-row items-center gap-2">
+                <Icon name="alert-circle-outline" size={16} color="#EF4444" />
+                <Text className="text-xs font-bold text-red-600 dark:text-red-400 flex-1">
+                  Tampon worn for &gt;6 hours. Change soon (max 8h TSS limit).
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
+
+        <PadReminderModal
+          visible={padModalVisible}
+          onClose={() => setPadModalVisible(false)}
+          isPeriodActive={isPeriodActiveToday}
+          isHeavyFlow={isHeavyFlow}
+        />
         {/* Symptom stat chips */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-3">
           <View className="flex-row gap-2 items-center">

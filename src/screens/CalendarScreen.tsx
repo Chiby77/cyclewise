@@ -8,19 +8,12 @@ import { Icon } from '@/components/Icon';
 import { ICONS } from '@/theme/icon-map';
 import { colors } from '@/theme/colors';
 import type { AppNavigationProp } from '@/navigation/types';
-import { useCycleData, formatDateKey } from '@/hooks/useCycleData';
+import { useCycleData } from '@/hooks/useCycleData';
 import { useHealth } from '@/context/HealthContext';
 import { useTheme } from '@/context/ThemeContext';
+import { getMonthGrid, formatMonthYear, formatDateKey } from '@/utils/calendarGrid';
 
 const DAY_HEADERS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-
-const WEEKS: (number | null)[][] = [
-  [null, null, null, null, 1, 2, 3],
-  [4, 5, 6, 7, 8, 9, 10],
-  [11, 12, 13, 14, 15, 16, 17],
-  [18, 19, 20, 21, 22, 23, 24],
-  [25, 26, 27, 28, 29, 30, 31],
-];
 
 const ACTIVITY_ICONS = [
   ICONS.heart,
@@ -38,20 +31,50 @@ const ACTIVITY_ICONS = [
 
 export function CalendarScreen() {
   const navigation = useNavigation<AppNavigationProp>();
-  const [selectedDay, setSelectedDay] = useState(new Date().getDate() || 21);
+  const today = new Date();
+  const [viewYear, setViewYear] = useState(today.getFullYear());
+  const [viewMonth, setViewMonth] = useState(today.getMonth());
+  const [selectedDay, setSelectedDay] = useState(today.getDate());
   const { currentLog, updateStat, updateDailyLog } = useHealth();
   const { isDark, themeColors } = useTheme();
 
-  const selectedDateStr = useMemo(() => {
-    const d = new Date();
-    d.setDate(selectedDay);
-    return formatDateKey(d);
-  }, [selectedDay]);
+  const weeks = useMemo(() => getMonthGrid(viewYear, viewMonth), [viewYear, viewMonth]);
 
-  const { isDatePeriod, isDateFertile, isDateLogged, pregnancyChance } = useCycleData(new Date());
+  const selectedDateStr = useMemo(() => {
+    return formatDateKey(viewYear, viewMonth, selectedDay);
+  }, [viewYear, viewMonth, selectedDay]);
+
+  const { isDatePeriod, isDateFertile, isDateLogged, pregnancyChance } = useCycleData(
+    new Date(viewYear, viewMonth, selectedDay)
+  );
 
   const isSelectedPeriod = isDatePeriod(selectedDateStr);
   const isSelectedFertile = isDateFertile(selectedDateStr);
+
+  const handlePrevMonth = () => {
+    if (viewMonth === 0) {
+      setViewMonth(11);
+      setViewYear((y) => y - 1);
+    } else {
+      setViewMonth((m) => m - 1);
+    }
+  };
+
+  const handleNextMonth = () => {
+    if (viewMonth === 11) {
+      setViewMonth(0);
+      setViewYear((y) => y + 1);
+    } else {
+      setViewMonth((m) => m + 1);
+    }
+  };
+
+  const handleJumpToday = () => {
+    const now = new Date();
+    setViewYear(now.getFullYear());
+    setViewMonth(now.getMonth());
+    setSelectedDay(now.getDate());
+  };
 
   const loggedSymptoms = useMemo(() => {
     const list: string[] = [];
@@ -83,14 +106,21 @@ export function CalendarScreen() {
           >
             <Text className="text-sm font-bold text-text dark:text-dark-text">Overview</Text>
           </Pressable>
-          <View className="flex-row items-center gap-1">
-            <Text className="text-lg font-extrabold text-text dark:text-dark-text">
-              {new Date().toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}
+
+          <View className="flex-row items-center gap-2">
+            <Pressable onPress={handlePrevMonth} className="p-1 active:opacity-70">
+              <Icon name={ICONS.back} size={18} color={isDark ? themeColors.text : colors.text} />
+            </Pressable>
+            <Text className="text-base font-extrabold text-text dark:text-dark-text min-w-[130px] text-center">
+              {formatMonthYear(viewYear, viewMonth)}
             </Text>
-            <Icon name={ICONS.chevronDown} size={16} color={isDark ? themeColors.text : colors.text} />
+            <Pressable onPress={handleNextMonth} className="p-1 active:opacity-70">
+              <Icon name={ICONS.forward} size={18} color={isDark ? themeColors.text : colors.text} />
+            </Pressable>
           </View>
+
           <Pressable
-            onPress={() => setSelectedDay(new Date().getDate())}
+            onPress={handleJumpToday}
             className="px-4 py-1.5 rounded-full border border-gray-200 dark:border-dark-border active:opacity-70"
           >
             <Text className="text-sm font-bold text-pink-primary">Today</Text>
@@ -105,20 +135,20 @@ export function CalendarScreen() {
           ))}
         </View>
 
-        {WEEKS.map((week, wi) => (
+        {weeks.map((week, wi) => (
           <View key={wi} className="flex-row mb-1">
             {week.map((day, di) => {
               if (!day) return <View key={di} className="flex-1" />;
 
-              const d = new Date();
-              d.setDate(day);
-              const dateStr = formatDateKey(d);
-
+              const dateStr = formatDateKey(viewYear, viewMonth, day);
               const isPeriod = isDatePeriod(dateStr);
               const isFertile = isDateFertile(dateStr);
               const isSelected = day === selectedDay;
               const isLogged = isDateLogged(dateStr);
-              const isToday = day === new Date().getDate();
+              const isToday =
+                day === today.getDate() &&
+                viewMonth === today.getMonth() &&
+                viewYear === today.getFullYear();
 
               return (
                 <Pressable key={di} onPress={() => setSelectedDay(day)} className="flex-1 items-center py-1">

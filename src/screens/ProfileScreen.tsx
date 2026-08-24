@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, Pressable, ScrollView, Share, Linking, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -13,6 +13,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
 import { useTheme } from '@/context/ThemeContext';
 import { setupNotifications } from '@/services/notifications';
+import { PadReminderModal } from '@/components/PadReminderModal';
 
 const GOALS: { id: string; icon: IconName; label: string }[] = [
   { id: 'Track My Cycle', icon: ICONS.goalCycle, label: 'Track My\nCycle' },
@@ -25,6 +26,7 @@ export function ProfileScreen() {
   const { userName, userEmail, signOut } = useAuth();
   const { profile, updateProfile } = useProfile();
   const { isDark, themeColors } = useTheme();
+  const [padModalVisible, setPadModalVisible] = useState(false);
 
   const displayName = profile?.full_name || userName || 'CycleWise User';
   const displayEmail = userEmail || 'user@cyclewise.app';
@@ -188,25 +190,53 @@ export function ProfileScreen() {
           </View>
         </View>
 
-        {/* Reminders */}
-        <Pressable
-          onPress={handleGrantPermissions}
-          className="bg-card dark:bg-dark-card rounded-2xl mx-4 p-4 shadow-sm mb-3 border border-gray-100 dark:border-dark-border relative overflow-hidden active:opacity-80"
-        >
+        {/* Reminders Section */}
+        <View className="bg-card dark:bg-dark-card rounded-2xl mx-4 p-4 shadow-sm mb-3 border border-gray-100 dark:border-dark-border relative overflow-hidden">
           <View className="flex-row items-center justify-between mb-2">
             <Text className="font-extrabold text-text dark:text-dark-text text-base">Reminders</Text>
             <Mascot className="scale-75 -mr-2" />
           </View>
-          <View className="flex-row items-start gap-3">
-            <Icon name={ICONS.bell} size={20} color={colors.pinkPrimary} style={{ marginTop: 2 }} />
-            <View className="flex-1">
-              <Text className="text-sm font-bold text-text dark:text-dark-text">Grant permissions</Text>
-              <Text className="text-xs text-muted dark:text-dark-muted font-semibold mt-0.5">
-                Grant notification and reminder permissions to receive timely cycle alerts.
-              </Text>
+
+          {/* Menstrual Product Reminders */}
+          <Pressable
+            onPress={() => setPadModalVisible(true)}
+            className="flex-row justify-between items-center py-3 border-b border-gray-100 dark:border-dark-border active:opacity-70"
+          >
+            <View className="flex-row items-center gap-3">
+              <Icon name={ICONS.notifications} size={18} color={colors.pinkPrimary} />
+              <View>
+                <Text className="text-sm font-bold text-text dark:text-dark-text">Pad / Tampon / Cup Reminders</Text>
+                <Text className="text-xs text-muted dark:text-dark-muted font-semibold">
+                  Custom intervals & 8h TSS safety limits
+                </Text>
+              </View>
             </View>
-          </View>
-        </Pressable>
+            <Icon name={ICONS.chevronForward} size={14} color="#9CA3AF" />
+          </Pressable>
+
+          {/* Grant Notification Permissions */}
+          <Pressable
+            onPress={handleGrantPermissions}
+            className="flex-row justify-between items-center py-3 active:opacity-70"
+          >
+            <View className="flex-row items-center gap-3 flex-1 pr-2">
+              <Icon name={ICONS.bell} size={18} color={colors.pinkPrimary} />
+              <View className="flex-1">
+                <Text className="text-sm font-bold text-text dark:text-dark-text">Notification Permissions</Text>
+                <Text className="text-xs text-muted dark:text-dark-muted font-semibold">
+                  Enable device alerts for water & cycle milestones
+                </Text>
+              </View>
+            </View>
+            <Icon name={ICONS.chevronForward} size={14} color="#9CA3AF" />
+          </Pressable>
+        </View>
+
+        <PadReminderModal
+          visible={padModalVisible}
+          onClose={() => setPadModalVisible(false)}
+          isPeriodActive={true}
+        />
 
         {/* Help */}
         <View className="bg-card dark:bg-dark-card rounded-2xl mx-4 p-4 shadow-sm mb-3 border border-gray-100 dark:border-dark-border">
