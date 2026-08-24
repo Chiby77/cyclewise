@@ -5,6 +5,8 @@ import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { RootNavigator } from '@/navigation/RootNavigator';
 import { AuthProvider } from '@/context/AuthContext';
+import { ThemeProvider } from '@/context/ThemeContext';
+import { HealthProvider } from '@/context/HealthContext';
 import { AppLockOverlay } from '@/components/AppLockOverlay';
 import { setupNotifications, scheduleWaterReminder } from '@/services/notifications';
 import { initSentry, Sentry } from '@/lib/sentry';
@@ -45,14 +47,18 @@ function App() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar style="dark" />
-      <AuthProvider>
-        <AppLockOverlay>
-          <NavigationContainer>
-            <RootNavigator />
-          </NavigationContainer>
-        </AppLockOverlay>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <HealthProvider>
+            <StatusBar style="auto" />
+            <AppLockOverlay>
+              <NavigationContainer>
+                <RootNavigator />
+              </NavigationContainer>
+            </AppLockOverlay>
+          </HealthProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }

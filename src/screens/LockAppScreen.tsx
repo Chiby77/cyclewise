@@ -48,29 +48,29 @@ export function LockAppScreen() {
   };
 
   return (
-    <View className="flex-1 bg-bg">
-      <SafeAreaView edges={['top']} className="bg-white">
+    <View className="flex-1 bg-bg dark:bg-dark-bg">
+      <SafeAreaView edges={['top']} className="bg-card dark:bg-dark-card border-b border-gray-100 dark:border-dark-border">
         <View className="flex-row items-center px-4 pb-3 pt-2">
-          <Pressable onPress={() => navigation.goBack()} className="p-1 mr-4">
-            <Icon name={ICONS.back} size={22} color={colors.text} />
+          <Pressable onPress={() => navigation.goBack()} className="p-1 mr-4 active:opacity-70">
+            <Icon name={ICONS.back} size={22} color={colors.pinkPrimary} />
           </Pressable>
-          <Text className="text-base font-extrabold text-text">Lock App</Text>
+          <Text className="text-base font-extrabold text-text dark:text-dark-text">Lock App</Text>
         </View>
       </SafeAreaView>
 
-      <View className="mx-4 mt-4 bg-white rounded-2xl p-4 shadow-sm flex-row items-center justify-between">
+      <View className="mx-4 mt-4 bg-card dark:bg-dark-card rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-dark-border flex-row items-center justify-between">
         <View className="flex-row items-center gap-3">
-          <View className="w-11 h-11 rounded-xl bg-gray-100 items-center justify-center">
-            <Icon name={ICONS.key} size={20} color={colors.text} />
+          <View className="w-11 h-11 rounded-xl bg-gray-100 dark:bg-dark-card-hover items-center justify-center">
+            <Icon name={ICONS.key} size={20} color={colors.pinkPrimary} />
           </View>
           <View>
-            <Text className="font-bold text-text text-sm">Lock App</Text>
-            <Text className="text-xs text-muted font-semibold">Enable Face ID / Fingerprint protection</Text>
+            <Text className="font-bold text-text dark:text-dark-text text-sm">Lock App</Text>
+            <Text className="text-xs text-muted dark:text-dark-muted font-semibold">Enable Face ID / Fingerprint protection</Text>
           </View>
         </View>
         <Pressable
           onPress={toggleLock}
-          className={`w-12 h-7 rounded-full justify-center ${locked ? 'bg-pink-primary' : 'bg-gray-300'}`}
+          className={`w-12 h-7 rounded-full justify-center ${locked ? 'bg-pink-primary' : 'bg-gray-300 dark:bg-dark-border'}`}
         >
           <View
             className="w-6 h-6 bg-white rounded-full shadow"

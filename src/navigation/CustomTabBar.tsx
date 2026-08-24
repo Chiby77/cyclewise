@@ -31,7 +31,7 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
 
   return (
     <View
-      className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex-row items-center justify-around px-2 pt-2 z-50"
+      className="absolute bottom-0 left-0 right-0 bg-card dark:bg-dark-card border-t border-gray-100 dark:border-dark-border flex-row items-center justify-around px-2 pt-2 z-50 shadow-lg"
       style={{ paddingBottom: Math.max(insets.bottom, 8) }}
     >
       {TABS.map((tab) => {
@@ -43,7 +43,7 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
             <Pressable
               key={tab.key}
               onPress={() => navigation.getParent()?.navigate('SymptomsLog')}
-              className="w-14 h-14 bg-teal rounded-full items-center justify-center shadow-lg -mt-5 active:opacity-80"
+              className="w-14 h-14 bg-teal rounded-full items-center justify-center shadow-lg -mt-5 active:opacity-80 border-2 border-white dark:border-dark-card"
             >
               <Icon name={ICONS.add} size={28} color="white" />
             </Pressable>
@@ -56,10 +56,10 @@ export function CustomTabBar({ state, navigation }: BottomTabBarProps) {
           <Pressable
             key={tab.key}
             onPress={() => navigation.navigate(tab.key)}
-            className="items-center gap-0.5 px-3 py-1"
+            className="items-center gap-0.5 px-3 py-1 active:opacity-80"
           >
             <Icon name={isActive ? activeIcon : inactiveIcon} size={22} color={isActive ? colors.teal : '#9CA3AF'} />
-            <Text className={`text-[10px] font-semibold ${isActive ? 'text-teal' : 'text-gray-400'}`}>
+            <Text className={`text-[10px] font-semibold ${isActive ? 'text-teal' : 'text-gray-400 dark:text-dark-muted'}`}>
               {tab.label}
             </Text>
           </Pressable>

@@ -22,6 +22,9 @@ export type RootStackParamList = {
   ExportReport: undefined;
   Language: undefined;
   AIHealthAssistant: undefined;
+  Account: undefined;
+  Terms: undefined;
+  PrivacyPolicy: undefined;
 };
 
 declare global {

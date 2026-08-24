@@ -12,7 +12,8 @@ import { colors } from '@/theme/colors';
 import { useAuth } from '@/context/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
 import { useCycleData, formatDateKey } from '@/hooks/useCycleData';
-import { useDailyLog } from '@/hooks/useDailyLog';
+import { useHealth } from '@/context/HealthContext';
+import { useTheme } from '@/context/ThemeContext';
 
 const CIRCUMFERENCE = 2 * Math.PI * 80; // r = 80
 
@@ -20,8 +21,10 @@ export function HomeScreen() {
   const navigation = useNavigation<AppNavigationProp>();
   const { userName } = useAuth();
   const { profile } = useProfile();
+  const { currentLog, updateStat } = useHealth();
+  const { isDark, themeColors } = useTheme();
+
   const todayStr = useMemo(() => formatDateKey(new Date()), []);
-  const { dailyLog } = useDailyLog(todayStr);
 
   const {
     currentCycleDay,
@@ -29,18 +32,19 @@ export function HomeScreen() {
     cycleLength,
     periodLength,
     pregnancyChance,
-    cycleHistory,
     isDatePeriod,
   } = useCycleData(new Date());
 
   const [widgetPage, setWidgetPage] = useState(0);
+
+  // Active user goal mode
+  const activeGoal = profile?.goal || 'Track My Cycle';
 
   // Dynamic weekly strip
   const { weekDays, weekDates, rawDates } = useMemo(() => {
     const now = new Date();
     const currentDayOfWeek = now.getDay(); // 0 is Sunday
     const startOfWeek = new Date(now);
-    // Start week on Monday
     const distanceToMonday = (currentDayOfWeek + 6) % 7;
     startOfWeek.setDate(now.getDate() - distanceToMonday);
 
@@ -61,7 +65,10 @@ export function HomeScreen() {
   const periodArc = ((periodLength || 5) / (cycleLength || 28)) * CIRCUMFERENCE;
   const fertileArc = (6 / (cycleLength || 28)) * CIRCUMFERENCE;
 
-  const symptomCount = (dailyLog.symptoms?.length || 0) + (dailyLog.moods?.length || 0);
+  const symptomCount =
+    (currentLog?.symptoms?.length || 0) +
+    (currentLog?.moods?.length || 0) +
+    (currentLog?.sex_activity?.length || 0);
 
   const symptomChips = [
     { label: 'Symptoms', count: symptomCount > 0 ? `+${symptomCount}` : '+0', icon: ICONS.people },
@@ -72,83 +79,153 @@ export function HomeScreen() {
   const displayName = profile?.full_name || userName || 'Monalisa';
 
   return (
-    <View className="flex-1 bg-bg">
-      <SafeAreaView edges={['top']} className="bg-white px-4 pb-4">
+    <View className="flex-1 bg-bg dark:bg-dark-bg">
+      <SafeAreaView edges={['top']} className="bg-card dark:bg-dark-card px-4 pb-4 border-b border-gray-100 dark:border-dark-border">
         <View className="flex-row items-center justify-between mb-3 pt-2">
           <View>
-            <Text className="text-sm font-semibold text-muted">Hi {displayName},</Text>
-            <Text className="text-lg font-extrabold text-text">Your current cycle</Text>
+            <Text className="text-sm font-semibold text-muted dark:text-dark-muted">Hi {displayName},</Text>
+            <Text className="text-lg font-extrabold text-text dark:text-dark-text">
+              {activeGoal === 'Track My Pregnancy'
+                ? 'Your Pregnancy Overview'
+                : activeGoal === 'Try to conceive'
+                ? 'Conception Tracker'
+                : 'Your current cycle'}
+            </Text>
           </View>
           <View className="flex-row items-center gap-2">
             <Pressable
               onPress={() => navigation.navigate('AIHealthAssistant')}
-              className="w-9 h-9 rounded-full bg-pink-light items-center justify-center"
+              className="w-9 h-9 rounded-full bg-pink-light dark:bg-dark-card-hover items-center justify-center active:opacity-80"
             >
               <Icon name={ICONS.sparkles} size={18} color={colors.pinkPrimary} />
             </Pressable>
             <Pressable
-              onPress={() => navigation.navigate('Profile')}
-              className="w-9 h-9 rounded-full bg-gray-100 items-center justify-center"
+              onPress={() => navigation.navigate('Account')}
+              className="w-9 h-9 rounded-full bg-gray-100 dark:bg-dark-card-hover items-center justify-center active:opacity-80"
             >
-              <Icon name={ICONS.settings} size={18} color={colors.text} />
+              <Icon name={ICONS.settings} size={18} color={isDark ? themeColors.text : colors.text} />
             </Pressable>
           </View>
         </View>
 
-        {/* Cycle wheel */}
-        <View className="items-center justify-center my-2">
-          <View className="items-center justify-center">
-            <Svg width={160} height={160} viewBox="0 0 180 180">
-              <Circle cx={90} cy={90} r={80} fill="none" stroke={colors.pinkLight} strokeWidth={14} />
-              <Circle
-                cx={90}
-                cy={90}
-                r={80}
-                fill="none"
-                stroke={colors.pinkPrimary}
-                strokeWidth={14}
-                strokeDasharray={`${periodArc} ${CIRCUMFERENCE - periodArc}`}
-                strokeDashoffset={125}
-                strokeLinecap="round"
-                rotation={-90}
-                origin="90, 90"
-              />
-              <Circle
-                cx={90}
-                cy={90}
-                r={80}
-                fill="none"
-                stroke={colors.teal}
-                strokeWidth={10}
-                strokeDasharray={`${fertileArc} ${CIRCUMFERENCE - fertileArc}`}
-                strokeDashoffset={CIRCUMFERENCE - periodArc - 30}
-                strokeLinecap="round"
-                rotation={-90}
-                origin="90, 90"
-              />
-            </Svg>
-            <View className="absolute items-center">
-              <Text className="text-2xl font-extrabold text-text">Day {currentCycleDay}</Text>
-              <Text className="text-xs font-bold text-pink-primary">
-                {periodDayNumber ? `Period Day ${periodDayNumber}` : 'Cycle Day ' + currentCycleDay}
-              </Text>
-              <Text className="text-[10px] font-semibold text-muted mt-0.5 text-center px-6">
-                {pregnancyChance} chance to get pregnant
+        {/* Dynamic Goal Modes */}
+        {activeGoal === 'Track My Pregnancy' ? (
+          <View className="bg-pink-soft dark:bg-dark-card-hover rounded-2xl p-4 my-2 border border-pink-light dark:border-dark-border items-center gap-2">
+            <View className="flex-row items-center gap-2">
+              <Icon name={ICONS.goalPregnancy} size={24} color={colors.pinkPrimary} />
+              <Text className="text-base font-extrabold text-text dark:text-dark-text">Pregnancy Progress</Text>
+            </View>
+
+            <View className="flex-row justify-around w-full mt-2">
+              <View className="items-center">
+                <Text className="text-xs text-muted dark:text-dark-muted font-bold">Gestational Age</Text>
+                <Text className="text-xl font-extrabold text-pink-primary mt-0.5">14 Wks 3 Days</Text>
+              </View>
+              <View className="w-px h-10 bg-gray-200 dark:bg-dark-border" />
+              <View className="items-center">
+                <Text className="text-xs text-muted dark:text-dark-muted font-bold">Due Date</Text>
+                <Text className="text-xl font-extrabold text-teal-dark mt-0.5">Nov 18, 2026</Text>
+              </View>
+            </View>
+
+            <View className="w-full bg-white dark:bg-dark-card p-3 rounded-xl mt-2 flex-row items-center gap-3">
+              <View className="w-10 h-10 rounded-full bg-pink-light items-center justify-center">
+                <Text className="text-base">🍋</Text>
+              </View>
+              <View className="flex-1">
+                <Text className="text-xs font-bold text-text dark:text-dark-text">Baby Size: Lemon</Text>
+                <Text className="text-[11px] text-muted dark:text-dark-muted font-semibold">
+                  Approx. 8.5 cm length • Trimester 2
+                </Text>
+              </View>
+            </View>
+
+            <Text className="text-[10px] text-muted dark:text-dark-muted font-semibold italic mt-1">
+              Estimate only — not a substitute for medical advice.
+            </Text>
+          </View>
+        ) : activeGoal === 'Try to conceive' ? (
+          <View className="bg-tealLight dark:bg-dark-card-hover rounded-2xl p-4 my-2 border border-teal dark:border-dark-border items-center gap-2">
+            <View className="flex-row items-center gap-2">
+              <Icon name={ICONS.goalConceive} size={24} color={colors.tealDark} />
+              <Text className="text-base font-extrabold text-text dark:text-dark-text">Fertile Window Prediction</Text>
+            </View>
+
+            <View className="items-center my-1">
+              <Text className="text-2xl font-extrabold text-teal-dark">High Fertility Window</Text>
+              <Text className="text-xs font-bold text-text dark:text-dark-text mt-1">
+                Predicted Ovulation: Day {cycleLength - 14}
               </Text>
             </View>
-          </View>
-        </View>
 
-        <View className="flex-row gap-3 justify-center mb-3">
+            <View className="w-full bg-white dark:bg-dark-card p-3 rounded-xl flex-row items-center justify-between">
+              <View className="flex-row items-center gap-2">
+                <Icon name={ICONS.cycle} size={20} color={colors.teal} />
+                <Text className="text-xs font-bold text-text dark:text-dark-text">Fertile Days</Text>
+              </View>
+              <Text className="text-xs font-extrabold text-teal-dark">Days {cycleLength - 19} – {cycleLength - 13}</Text>
+            </View>
+
+            <Text className="text-[10px] text-muted dark:text-dark-muted font-semibold italic">
+              Estimate only — not a substitute for medical advice.
+            </Text>
+          </View>
+        ) : (
+          /* Standard Cycle Wheel (Track My Cycle) */
+          <View className="items-center justify-center my-2">
+            <View className="items-center justify-center">
+              <Svg width={160} height={160} viewBox="0 0 180 180">
+                <Circle cx={90} cy={90} r={80} fill="none" stroke={isDark ? '#2A2A30' : colors.pinkLight} strokeWidth={14} />
+                <Circle
+                  cx={90}
+                  cy={90}
+                  r={80}
+                  fill="none"
+                  stroke={colors.pinkPrimary}
+                  strokeWidth={14}
+                  strokeDasharray={`${periodArc} ${CIRCUMFERENCE - periodArc}`}
+                  strokeDashoffset={125}
+                  strokeLinecap="round"
+                  rotation={-90}
+                  origin="90, 90"
+                />
+                <Circle
+                  cx={90}
+                  cy={90}
+                  r={80}
+                  fill="none"
+                  stroke={colors.teal}
+                  strokeWidth={10}
+                  strokeDasharray={`${fertileArc} ${CIRCUMFERENCE - fertileArc}`}
+                  strokeDashoffset={CIRCUMFERENCE - periodArc - 30}
+                  strokeLinecap="round"
+                  rotation={-90}
+                  origin="90, 90"
+                />
+              </Svg>
+              <View className="absolute items-center">
+                <Text className="text-2xl font-extrabold text-text dark:text-dark-text">Day {currentCycleDay}</Text>
+                <Text className="text-xs font-bold text-pink-primary">
+                  {periodDayNumber ? `Period Day ${periodDayNumber}` : 'Cycle Day ' + currentCycleDay}
+                </Text>
+                <Text className="text-[10px] font-semibold text-muted dark:text-dark-muted mt-0.5 text-center px-6">
+                  {pregnancyChance} chance to get pregnant
+                </Text>
+              </View>
+            </View>
+          </View>
+        )}
+
+        <View className="flex-row gap-3 justify-center mb-3 mt-1">
           <Pressable
             onPress={() => navigation.navigate('LogPeriod')}
-            className="px-5 py-2 rounded-full border-2 border-pink-primary"
+            className="px-5 py-2 rounded-full border-2 border-pink-primary active:opacity-80"
           >
             <Text className="text-pink-primary text-sm font-bold">Edit period</Text>
           </Pressable>
           <Pressable
             onPress={() => navigation.navigate('CycleInfo')}
-            className="px-5 py-2 rounded-full bg-pink-primary"
+            className="px-5 py-2 rounded-full bg-pink-primary active:opacity-80"
           >
             <Text className="text-white text-sm font-bold">Details</Text>
           </Pressable>
@@ -163,15 +240,15 @@ export function HomeScreen() {
             const isToday = rawDate.toDateString() === new Date().toDateString();
             return (
               <View key={i} className="items-center gap-0.5">
-                <Text className="text-[10px] font-bold text-muted">{d}</Text>
+                <Text className="text-[10px] font-bold text-muted dark:text-dark-muted">{d}</Text>
                 <View
                   className={`w-8 h-8 rounded-full items-center justify-center ${
-                    isToday ? 'bg-pink-primary' : isPeriod ? 'bg-pink-light' : ''
+                    isToday ? 'bg-pink-primary' : isPeriod ? 'bg-pink-light dark:bg-dark-card-hover' : ''
                   }`}
                 >
                   <Text
                     className={`text-xs font-bold ${
-                      isToday ? 'text-white' : isPeriod ? 'text-pink-dark' : 'text-text'
+                      isToday ? 'text-white' : isPeriod ? 'text-pink-dark' : 'text-text dark:text-dark-text'
                     }`}
                   >
                     {dateNum}
@@ -185,7 +262,7 @@ export function HomeScreen() {
       </SafeAreaView>
 
       {/* Scrollable body */}
-      <ScrollView className="flex-1 px-4" contentContainerClassName="py-3 pb-24">
+      <ScrollView className="flex-1 px-4" contentContainerClassName="py-3 pb-24" showsVerticalScrollIndicator={false}>
         {/* Symptom stat chips */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-3">
           <View className="flex-row gap-2 items-center">
@@ -193,11 +270,11 @@ export function HomeScreen() {
               <Pressable
                 key={i}
                 onPress={() => navigation.navigate('SymptomsLog')}
-                className="bg-white rounded-2xl p-3 items-center min-w-[90px] shadow-sm border border-pink-light"
+                className="bg-card dark:bg-dark-card rounded-2xl p-3 items-center min-w-[90px] shadow-sm border border-pink-light dark:border-dark-border active:opacity-80"
               >
                 {i === 0 ? (
                   <View className="flex-row items-center gap-1 mb-1">
-                    <Icon name={c.icon} size={22} color={colors.text} />
+                    <Icon name={c.icon} size={22} color={isDark ? themeColors.text : colors.text} />
                     <View className="w-6 h-6 rounded-full bg-teal items-center justify-center">
                       <Text className="text-white text-[10px] font-bold">{c.count}</Text>
                     </View>
@@ -207,7 +284,7 @@ export function HomeScreen() {
                     <Icon name={c.icon} size={20} color={colors.pinkPrimary} />
                   </View>
                 )}
-                <Text className="text-xs font-bold text-muted">{c.label}</Text>
+                <Text className="text-xs font-bold text-muted dark:text-dark-muted">{c.label}</Text>
                 {i !== 0 && (
                   <Text className="text-base font-extrabold text-pink-primary">{c.count}</Text>
                 )}
@@ -215,7 +292,7 @@ export function HomeScreen() {
             ))}
             <Pressable
               onPress={() => navigation.navigate('SymptomsLog')}
-              className="w-8 h-8 rounded-full bg-gray-200 items-center justify-center"
+              className="w-8 h-8 rounded-full bg-gray-200 dark:bg-dark-card-hover items-center justify-center active:opacity-80"
             >
               <Icon name={ICONS.chevronForward} size={16} color="#6B7280" />
             </Pressable>
@@ -225,28 +302,28 @@ export function HomeScreen() {
         {/* AI Health Assistant Banner */}
         <Pressable
           onPress={() => navigation.navigate('AIHealthAssistant')}
-          className="bg-white rounded-2xl p-4 shadow-sm mb-3 border border-pink-light flex-row items-center justify-between"
+          className="bg-card dark:bg-dark-card rounded-2xl p-4 shadow-sm mb-3 border border-pink-light dark:border-dark-border flex-row items-center justify-between active:opacity-80"
         >
           <View className="flex-row items-center gap-3 flex-1">
-            <View className="w-10 h-10 rounded-full bg-pink-light items-center justify-center">
+            <View className="w-10 h-10 rounded-full bg-pink-light dark:bg-dark-card-hover items-center justify-center">
               <Icon name={ICONS.sparkles} size={20} color={colors.pinkPrimary} />
             </View>
             <View className="flex-1">
-              <Text className="font-extrabold text-text text-sm">Ask CycleWise AI</Text>
-              <Text className="text-xs text-muted font-medium">Empathetic cycle & symptom insights</Text>
+              <Text className="font-extrabold text-text dark:text-dark-text text-sm">Ask CycleWise AI</Text>
+              <Text className="text-xs text-muted dark:text-dark-muted font-medium">Empathetic cycle & symptom insights</Text>
             </View>
           </View>
           <Icon name={ICONS.chevronForward} size={16} color={colors.pinkPrimary} />
         </Pressable>
 
         {/* History */}
-        <View className="bg-white rounded-2xl p-4 shadow-sm mb-3">
+        <View className="bg-card dark:bg-dark-card rounded-2xl p-4 shadow-sm mb-3 border border-gray-100 dark:border-dark-border">
           <View className="flex-row items-center justify-between mb-3">
             <View className="flex-row items-center gap-2">
-              <Icon name={ICONS.history} size={20} color={colors.text} />
-              <Text className="font-extrabold text-text">History</Text>
+              <Icon name={ICONS.history} size={20} color={colors.pinkPrimary} />
+              <Text className="font-extrabold text-text dark:text-dark-text text-base">History</Text>
             </View>
-            <Pressable onPress={() => navigation.navigate('CycleInfo')} className="flex-row items-center gap-1">
+            <Pressable onPress={() => navigation.navigate('CycleInfo')} className="flex-row items-center gap-1 active:opacity-80">
               <Text className="text-sm font-bold text-pink-primary">See more</Text>
               <Icon name={ICONS.chevronForward} size={14} color={colors.pinkPrimary} />
             </Pressable>
@@ -254,13 +331,13 @@ export function HomeScreen() {
 
           {/* Current cycle bar */}
           <View className="mb-3">
-            <Text className="font-bold text-sm text-text mb-1">
+            <Text className="font-bold text-sm text-text dark:text-dark-text mb-1">
               Current cycle: {currentCycleDay} Days
             </Text>
-            <Text className="text-xs text-muted font-semibold mb-2">
+            <Text className="text-xs text-muted dark:text-dark-muted font-semibold mb-2">
               {cycleLength} Day Cycle Goal
             </Text>
-            <View className="h-6 bg-gray-100 rounded-full overflow-hidden">
+            <View className="h-6 bg-gray-100 dark:bg-dark-card-hover rounded-full overflow-hidden">
               <View
                 className="absolute left-0 h-full rounded-full bg-pink-primary items-center justify-center"
                 style={{ width: `${Math.min(100, ((periodLength || 5) / (cycleLength || 28)) * 100)}%` }}
@@ -282,13 +359,13 @@ export function HomeScreen() {
           {/* Previous cycle bar */}
           <View>
             <View className="flex-row items-center gap-2 mb-1">
-              <Text className="font-bold text-sm text-text">31 Days</Text>
+              <Text className="font-bold text-sm text-text dark:text-dark-text">31 Days</Text>
               <View className="w-5 h-5 rounded-full bg-green-500 items-center justify-center">
                 <Icon name={ICONS.check} size={12} color="white" />
               </View>
             </View>
-            <Text className="text-xs text-muted font-semibold mb-2">Previous Cycle Completed</Text>
-            <View className="h-6 bg-gray-100 rounded-full overflow-hidden">
+            <Text className="text-xs text-muted dark:text-dark-muted font-semibold mb-2">Previous Cycle Completed</Text>
+            <View className="h-6 bg-gray-100 dark:bg-dark-card-hover rounded-full overflow-hidden">
               <View
                 className="absolute left-0 h-full rounded-full bg-pink-primary items-center justify-center"
                 style={{ width: '16%' }}
@@ -306,24 +383,24 @@ export function HomeScreen() {
         </View>
 
         {/* Home screen widget */}
-        <View className="bg-white rounded-2xl p-4 shadow-sm mb-3">
+        <View className="bg-card dark:bg-dark-card rounded-2xl p-4 shadow-sm mb-3 border border-gray-100 dark:border-dark-border">
           <View className="flex-row items-center gap-2 mb-3">
-            <Icon name={ICONS.grid} size={18} color={colors.text} />
-            <Text className="font-extrabold text-text">Home screen widget</Text>
+            <Icon name={ICONS.grid} size={18} color={colors.pinkPrimary} />
+            <Text className="font-extrabold text-text dark:text-dark-text text-base">Home screen widget</Text>
           </View>
 
           {widgetPage === 0 && (
             <LinearGradient
-              colors={[colors.pinkLight, colors.pinkPastelLight, colors.lightBlue]}
+              colors={isDark ? ['#1E1E22', '#2A2A30'] : [colors.pinkLight, colors.pinkPastelLight, colors.lightBlue]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={{ borderRadius: 16, overflow: 'hidden', padding: 16 }}
             >
-              <Text className="text-lg font-extrabold text-text">Cycle day {currentCycleDay}</Text>
-              <Text className="text-sm font-semibold text-muted mb-3">
+              <Text className="text-lg font-extrabold text-text dark:text-dark-text">Cycle day {currentCycleDay}</Text>
+              <Text className="text-sm font-semibold text-muted dark:text-dark-muted mb-3">
                 {pregnancyChance} chance to get pregnant
               </Text>
-              <View className="h-3 bg-white/50 rounded-full mt-4">
+              <View className="h-3 bg-white/50 dark:bg-dark-card-hover rounded-full mt-4">
                 <View className="absolute left-0 h-full w-1/4 bg-pink-primary rounded-full" />
                 <View
                   className="absolute w-4 h-4 rounded-full bg-pink-primary border-2 border-white"
@@ -334,11 +411,6 @@ export function HomeScreen() {
                   className="absolute w-4 h-4 rounded-full bg-teal border-2 border-white"
                   style={{ left: '65%', top: '50%', marginTop: -8, marginLeft: -8 }}
                 />
-              </View>
-              <View className="flex-row justify-end mt-2 gap-1 opacity-30">
-                <Icon name={ICONS.heart} size={10} color={colors.pinkPrimary} />
-                <Icon name={ICONS.heart} size={10} color={colors.pinkPrimary} />
-                <Icon name={ICONS.heartOutline} size={10} color={colors.pinkPrimary} />
               </View>
             </LinearGradient>
           )}
@@ -354,7 +426,7 @@ export function HomeScreen() {
             <View className="rounded-2xl bg-[#2196F3] p-4">
               <Text className="text-base font-extrabold text-white">Water Intake</Text>
               <Text className="text-xs text-white/80 font-semibold">
-                {dailyLog.water_ml ?? 800} / 2000 ml
+                {currentLog?.water_ml ?? 460} / 2000 ml
               </Text>
             </View>
           )}
@@ -364,7 +436,7 @@ export function HomeScreen() {
               <Pressable
                 key={i}
                 onPress={() => setWidgetPage(i)}
-                className={`h-2 rounded-full ${widgetPage === i ? 'bg-pink-primary w-4' : 'bg-gray-300 w-2'}`}
+                className={`h-2 rounded-full ${widgetPage === i ? 'bg-pink-primary w-4' : 'bg-gray-300 dark:bg-dark-border w-2'}`}
               />
             ))}
           </View>
@@ -372,47 +444,60 @@ export function HomeScreen() {
           <View className="flex-row gap-2 mt-3">
             <Pressable
               onPress={() => navigation.navigate('Widgets')}
-              className="flex-1 py-2.5 rounded-full border-2 border-pink-primary items-center"
+              className="flex-1 py-2.5 rounded-full border-2 border-pink-primary items-center active:opacity-80"
             >
               <Text className="text-pink-primary text-sm font-bold">More Widgets</Text>
             </Pressable>
             <Pressable
               onPress={() => navigation.navigate('SymptomsLog')}
-              className="flex-1 py-2.5 rounded-full bg-pink-primary items-center"
+              className="flex-1 py-2.5 rounded-full bg-pink-primary items-center active:opacity-80"
             >
-              <Text className="text-white text-sm font-bold">Add</Text>
+              <Text className="text-white text-sm font-bold">+ Add</Text>
             </Pressable>
           </View>
         </View>
 
-        {/* Quick stats */}
+        {/* Quick stats connected to HealthContext & StatCard Editor */}
         <View className="flex-row gap-2">
           <StatCard
             label="Weight"
-            value={dailyLog.weight ? String(dailyLog.weight) : '45.6'}
+            value={currentLog?.weight ?? 45.6}
             unit="kg"
             icon={ICONS.weight}
+            minRange={30}
+            maxRange={200}
+            onSave={(val) => updateStat('weight', val)}
           />
           <StatCard
             label="Temperature"
-            value={dailyLog.temperature ? String(dailyLog.temperature) : '36.5'}
+            value={currentLog?.temperature ?? 36.5}
             unit="C"
             icon={ICONS.temperature}
+            minRange={35}
+            maxRange={42}
+            onSave={(val) => updateStat('temperature', val)}
           />
           <StatCard
             label="Sleep"
-            value={dailyLog.sleep_minutes ? String(dailyLog.sleep_minutes) : '480'}
+            value={currentLog?.sleep_minutes ?? 480}
             unit="min"
             icon={ICONS.sleep}
+            minRange={0}
+            maxRange={1440}
+            onSave={(val) => updateStat('sleep_minutes', val)}
           />
           <StatCard
             label="Drink"
-            value={dailyLog.water_ml ? String(dailyLog.water_ml) : '460'}
+            value={currentLog?.water_ml ?? 460}
             unit="ml"
             icon={ICONS.drink}
+            minRange={0}
+            maxRange={10000}
+            onSave={(val) => updateStat('water_ml', val)}
           />
         </View>
       </ScrollView>
     </View>
   );
 }
+

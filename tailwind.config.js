@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: 'class',
   content: ['./App.tsx', './src/**/*.{js,jsx,ts,tsx}'],
   presets: [require('nativewind/preset')],
   theme: {
@@ -18,6 +19,12 @@ module.exports = {
         card: '#FFFFFF',
         text: '#1C1C1E',
         muted: '#8E8E93',
+        'dark-bg': '#121214',
+        'dark-card': '#1E1E22',
+        'dark-card-hover': '#2A2A30',
+        'dark-text': '#F3F4F6',
+        'dark-muted': '#9CA3AF',
+        'dark-border': '#374151',
       },
     },
   },

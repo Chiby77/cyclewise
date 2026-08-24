@@ -21,4 +21,27 @@ export const colors = {
   blue: '#2196F3',
   blueDark: '#1E88E5',
   blueLight: '#42A5F5',
+
+  // Dark Mode Tokens
+  darkBg: '#121214',
+  darkCard: '#1E1E22',
+  darkText: '#F3F4F6',
+  darkMuted: '#9CA3AF',
+  darkBorder: '#374151',
+  darkPinkPrimary: '#EC407A',
+  darkTeal: '#00ACC1',
 };
+
+export function getThemeColors(isDark: boolean) {
+  return {
+    bg: isDark ? colors.darkBg : colors.bg,
+    card: isDark ? colors.darkCard : colors.card,
+    text: isDark ? colors.darkText : colors.text,
+    muted: isDark ? colors.darkMuted : colors.muted,
+    border: isDark ? colors.darkBorder : '#E5E7EB',
+    pinkPrimary: isDark ? colors.darkPinkPrimary : colors.pinkPrimary,
+    teal: isDark ? colors.darkTeal : colors.teal,
+    gradientHeader: isDark ? ['#880E4F', '#4A148C'] : ['#F06292', '#E91E63'],
+    gradientCard: isDark ? ['#1E1E22', '#2A2A30'] : ['#FFFFFF', '#FDEEF5'],
+  };
+}

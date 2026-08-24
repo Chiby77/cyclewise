@@ -9,41 +9,47 @@ import { Icon } from '@/components/Icon';
 import { ICONS } from '@/theme/icon-map';
 import { colors } from '@/theme/colors';
 import type { AppNavigationProp } from '@/navigation/types';
-import { useDailyLog } from '@/hooks/useDailyLog';
-import { formatDateKey } from '@/hooks/useCycleData';
+import { useHealth } from '@/context/HealthContext';
+import { useTheme } from '@/context/ThemeContext';
 
 export function SymptomsLogScreen() {
   const navigation = useNavigation<AppNavigationProp>();
-  const todayStr = useMemo(() => formatDateKey(new Date()), []);
-  const { dailyLog, updateLog } = useDailyLog(todayStr);
+  const { currentLog, updateDailyLog, updateStat } = useHealth();
+  const { isDark, themeColors } = useTheme();
 
-  const [flow, setFlow] = useState<string[]>(dailyLog.flow ? [dailyLog.flow] : ['Light']);
+  const [flow, setFlow] = useState<string[]>(currentLog?.flow ? [currentLog.flow] : ['Light']);
   const [sex, setSex] = useState<string[]>(
-    dailyLog.sex_activity.length > 0 ? dailyLog.sex_activity : ['Did not have sex']
+    currentLog?.sex_activity && currentLog.sex_activity.length > 0
+      ? currentLog.sex_activity
+      : ['Did not have sex']
   );
   const [mood, setMood] = useState<string[]>(
-    dailyLog.moods.length > 0 ? dailyLog.moods : ['Calm']
+    currentLog?.moods && currentLog.moods.length > 0 ? currentLog.moods : ['Calm']
   );
   const [symptoms, setSymptoms] = useState<string[]>(
-    dailyLog.symptoms.length > 0 ? dailyLog.symptoms : ['Cramps', 'Tender breasts']
+    currentLog?.symptoms && currentLog.symptoms.length > 0
+      ? currentLog.symptoms
+      : ['Cramps', 'Tender breasts']
   );
   const [discharge, setDischarge] = useState<string[]>(
-    dailyLog.discharge ? [dailyLog.discharge] : ['No discharge']
+    currentLog?.discharge ? [currentLog.discharge] : ['No discharge']
   );
   const [digestion, setDigestion] = useState<string[]>(
-    dailyLog.digestion.length > 0 ? dailyLog.digestion : ['Diarrhea']
+    currentLog?.digestion && currentLog.digestion.length > 0 ? currentLog.digestion : ['Diarrhea']
   );
   const [pregnancy, setPregnancy] = useState<string[]>(
-    dailyLog.tests?.pregnancy ? [dailyLog.tests.pregnancy] : ["Didn't take tests"]
+    currentLog?.tests?.pregnancy ? [currentLog.tests.pregnancy] : ["Didn't take tests"]
   );
   const [ovulation, setOvulation] = useState<string[]>(
-    dailyLog.tests?.ovulation ? [dailyLog.tests.ovulation] : ["Didn't take tests"]
+    currentLog?.tests?.ovulation ? [currentLog.tests.ovulation] : ["Didn't take tests"]
   );
   const [activity, setActivity] = useState<string[]>(
-    dailyLog.physical_activity.length > 0 ? dailyLog.physical_activity : ["Didn't exercise"]
+    currentLog?.physical_activity && currentLog.physical_activity.length > 0
+      ? currentLog.physical_activity
+      : ["Didn't exercise"]
   );
-  const [others, setOthers] = useState<string[]>(dailyLog.other_factors || []);
-  const [note, setNote] = useState(dailyLog.note || '');
+  const [others, setOthers] = useState<string[]>(currentLog?.other_factors || []);
+  const [note, setNote] = useState(currentLog?.note || '');
 
   const toggleSingle = (setter: React.Dispatch<React.SetStateAction<string[]>>) => (label: string) => {
     setter((prev) => (prev.includes(label) ? [] : [label]));
@@ -53,8 +59,8 @@ export function SymptomsLogScreen() {
     setter((prev) => (prev.includes(label) ? prev.filter((x) => x !== label) : [...prev, label]));
   };
 
-  const handleSave = () => {
-    updateLog({
+  const handleSave = async () => {
+    await updateDailyLog({
       flow: flow[0] || null,
       sex_activity: sex,
       moods: mood,
@@ -73,53 +79,65 @@ export function SymptomsLogScreen() {
   };
 
   return (
-    <View className="flex-1 bg-bg">
-      <SafeAreaView edges={['top']} className="bg-white">
+    <View className="flex-1 bg-bg dark:bg-dark-bg">
+      <SafeAreaView edges={['top']} className="bg-card dark:bg-dark-card border-b border-gray-100 dark:border-dark-border">
         <View className="flex-row items-center justify-between px-4 pb-3 pt-2">
-          <Pressable onPress={() => navigation.goBack()} className="p-1">
-            <Icon name={ICONS.back} size={22} color={colors.text} />
+          <Pressable onPress={() => navigation.goBack()} className="p-1 active:opacity-70">
+            <Icon name={ICONS.back} size={22} color={colors.pinkPrimary} />
           </Pressable>
           <View className="items-center">
-            <Text className="text-base font-extrabold text-text">Symptoms Log</Text>
-            <Text className="text-xs text-muted font-semibold">
+            <Text className="text-base font-extrabold text-text dark:text-dark-text">Symptoms Log</Text>
+            <Text className="text-xs text-muted dark:text-dark-muted font-semibold">
               Today, {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
             </Text>
           </View>
-          <Pressable onPress={() => navigation.navigate('AIHealthAssistant')} className="p-1">
+          <Pressable onPress={() => navigation.navigate('AIHealthAssistant')} className="p-1 active:opacity-70">
             <Icon name={ICONS.sparkles} size={20} color={colors.pinkPrimary} />
           </Pressable>
         </View>
         <View className="flex-row gap-2 px-4 py-3">
           <StatCard
             label="Weight"
-            value={dailyLog.weight ? String(dailyLog.weight) : '45.6'}
+            value={currentLog?.weight ?? 45.6}
             unit="kg"
             icon={ICONS.weight}
+            minRange={30}
+            maxRange={200}
+            onSave={(val) => updateStat('weight', val)}
           />
           <StatCard
             label="Temperature"
-            value={dailyLog.temperature ? String(dailyLog.temperature) : '36.5'}
+            value={currentLog?.temperature ?? 36.5}
             unit="C"
             icon={ICONS.temperature}
+            minRange={35}
+            maxRange={42}
+            onSave={(val) => updateStat('temperature', val)}
           />
           <StatCard
             label="Sleep"
-            value={dailyLog.sleep_minutes ? String(dailyLog.sleep_minutes) : '480'}
+            value={currentLog?.sleep_minutes ?? 480}
             unit="min"
             icon={ICONS.sleep}
+            minRange={0}
+            maxRange={1440}
+            onSave={(val) => updateStat('sleep_minutes', val)}
           />
           <StatCard
             label="Drink"
-            value={dailyLog.water_ml ? String(dailyLog.water_ml) : '460'}
+            value={currentLog?.water_ml ?? 460}
             unit="ml"
             icon={ICONS.drink}
+            minRange={0}
+            maxRange={10000}
+            onSave={(val) => updateStat('water_ml', val)}
           />
         </View>
       </SafeAreaView>
 
-      <ScrollView className="flex-1" contentContainerClassName="pb-32">
-        <View>
-          <Mascot className="absolute right-4 top-2 z-10" />
+      <ScrollView className="flex-1" contentContainerClassName="pb-32" showsVerticalScrollIndicator={false}>
+        <View className="flex-row justify-end px-4 py-2">
+          <Mascot />
         </View>
 
         <MultiSelectSection
@@ -199,9 +217,6 @@ export function SymptomsLogScreen() {
           selected={symptoms}
           onToggle={toggleMulti(setSymptoms)}
         />
-        <View>
-          <Mascot className="absolute right-4 top-2 z-10" />
-        </View>
         <MultiSelectSection
           icon={ICONS.watery}
           title="Vaginal Discharge"
@@ -289,39 +304,37 @@ export function SymptomsLogScreen() {
           onToggle={toggleMulti(setOthers)}
         />
 
-        <View className="bg-white rounded-2xl p-4 shadow-sm mx-4 mb-3">
+        <View className="bg-card dark:bg-dark-card rounded-2xl p-4 shadow-sm mx-4 mb-3 border border-gray-100 dark:border-dark-border">
           <View className="flex-row items-center justify-between mb-3">
             <View className="flex-row items-center gap-2">
               <Icon name={ICONS.note} size={20} color={colors.pinkPrimary} />
-              <Text className="text-base font-bold text-text">Note</Text>
+              <Text className="text-base font-bold text-text dark:text-dark-text">Note</Text>
             </View>
-            <View className="flex-row gap-2">
-              <Pressable
-                onPress={() => setNote('')}
-                className="w-9 h-9 rounded-full bg-gray-100 items-center justify-center"
-              >
-                <Icon name={ICONS.trash} size={16} color="#6B7280" />
-              </Pressable>
-            </View>
+            <Pressable
+              onPress={() => setNote('')}
+              className="w-9 h-9 rounded-full bg-gray-100 dark:bg-dark-card-hover items-center justify-center active:opacity-70"
+            >
+              <Icon name={ICONS.trash} size={16} color="#6B7280" />
+            </Pressable>
           </View>
           <TextInput
             value={note}
             onChangeText={setNote}
-            placeholder="Log a symptoms or make a note"
-            placeholderTextColor="#C7C7CC"
+            placeholder="Log symptoms or make a note"
+            placeholderTextColor="#9CA3AF"
             multiline
             textAlignVertical="top"
-            className="h-24 text-sm text-text font-semibold"
+            className="h-24 text-sm text-text dark:text-dark-text font-semibold"
           />
         </View>
       </ScrollView>
 
-      <SafeAreaView edges={['bottom']} className="absolute bottom-0 left-0 right-0 bg-bg px-4 pt-4">
+      <SafeAreaView edges={['bottom']} className="absolute bottom-0 left-0 right-0 bg-card dark:bg-dark-card border-t border-gray-100 dark:border-dark-border px-4 pt-4">
         <Pressable
           onPress={handleSave}
           className="w-full py-4 rounded-full bg-pink-primary items-center shadow-md mb-4 active:opacity-90"
         >
-          <Text className="text-white text-base font-bold">Save</Text>
+          <Text className="text-white text-base font-bold">Save Changes</Text>
         </Pressable>
       </SafeAreaView>
     </View>

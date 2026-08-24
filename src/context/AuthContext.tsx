@@ -11,12 +11,15 @@ type AuthContextValue = {
   userId: string;
   userEmail: string | null;
   userName: string | null;
+  authProvider: 'password' | 'google';
   error: string | null;
   clearError: () => void;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (name: string, email: string, password: string, confirmPassword: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
+  updateProfileName: (fullName: string) => Promise<void>;
+  changePassword: (newPassword: string) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -30,6 +33,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [localFallbackUser, setLocalFallbackUser] = useState<{ email: string; name: string } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [customNameState, setCustomNameState] = useState<string | null>(null);
 
   // Initialize SQLite & Sync Service on App Startup
   useEffect(() => {
@@ -235,17 +239,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setSession(null);
     setUser(null);
     setLocalFallbackUser(null);
+    setCustomNameState(null);
     syncService.setCurrentUser(null);
+  };
+
+  const updateProfileName = async (fullName: string) => {
+    setCustomNameState(fullName);
+    const targetId = user?.id || (localFallbackUser ? MOCK_LOCAL_USER_ID : '');
+    if (targetId) {
+      upsertLocalProfile({
+        id: targetId,
+        full_name: fullName,
+      });
+      if (isSupabaseConfigured && user) {
+        await supabase.auth.updateUser({
+          data: { full_name: fullName },
+        });
+        syncService.syncPendingData().catch(console.warn);
+      }
+    }
+  };
+
+  const changePassword = async (newPassword: string) => {
+    if (newPassword.length < 6) {
+      throw new Error('Password must be at least 6 characters long.');
+    }
+    if (isSupabaseConfigured && user) {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+    }
   };
 
   const activeUserId = user?.id || (localFallbackUser ? MOCK_LOCAL_USER_ID : '');
   const isAuthenticated = Boolean(user || localFallbackUser);
   const userEmail = user?.email || localFallbackUser?.email || null;
   const userName =
+    customNameState ||
     user?.user_metadata?.full_name ||
     user?.user_metadata?.name ||
     localFallbackUser?.name ||
     (userEmail ? userEmail.split('@')[0] : null);
+
+  const providerType = user?.app_metadata?.provider || user?.identities?.[0]?.provider;
+  const authProvider: 'password' | 'google' = providerType === 'google' ? 'google' : 'password';
 
   const value = useMemo(
     () => ({
@@ -255,14 +291,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       userId: activeUserId,
       userEmail,
       userName,
+      authProvider,
       error,
       clearError: () => setError(null),
       signIn,
       signUp,
       signInWithGoogle,
       signOut,
+      updateProfileName,
+      changePassword,
     }),
-    [isAuthenticated, isLoading, user, activeUserId, userEmail, userName, error]
+    [isAuthenticated, isLoading, user, activeUserId, userEmail, userName, authProvider, error, customNameState]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

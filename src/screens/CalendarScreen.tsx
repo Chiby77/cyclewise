@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, Pressable, ScrollView } from 'react-native';
+import { View, Text, Pressable, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { Mascot } from '@/components/Mascot';
@@ -9,7 +9,8 @@ import { ICONS } from '@/theme/icon-map';
 import { colors } from '@/theme/colors';
 import type { AppNavigationProp } from '@/navigation/types';
 import { useCycleData, formatDateKey } from '@/hooks/useCycleData';
-import { useDailyLog } from '@/hooks/useDailyLog';
+import { useHealth } from '@/context/HealthContext';
+import { useTheme } from '@/context/ThemeContext';
 
 const DAY_HEADERS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
@@ -38,6 +39,8 @@ const ACTIVITY_ICONS = [
 export function CalendarScreen() {
   const navigation = useNavigation<AppNavigationProp>();
   const [selectedDay, setSelectedDay] = useState(new Date().getDate() || 21);
+  const { currentLog, updateStat, updateDailyLog } = useHealth();
+  const { isDark, themeColors } = useTheme();
 
   const selectedDateStr = useMemo(() => {
     const d = new Date();
@@ -46,47 +49,57 @@ export function CalendarScreen() {
   }, [selectedDay]);
 
   const { isDatePeriod, isDateFertile, isDateLogged, pregnancyChance } = useCycleData(new Date());
-  const { dailyLog } = useDailyLog(selectedDateStr);
 
   const isSelectedPeriod = isDatePeriod(selectedDateStr);
   const isSelectedFertile = isDateFertile(selectedDateStr);
 
   const loggedSymptoms = useMemo(() => {
     const list: string[] = [];
-    if (dailyLog.flow) list.push(`Flow: ${dailyLog.flow}`);
-    if (dailyLog.symptoms) list.push(...dailyLog.symptoms);
-    if (dailyLog.moods) list.push(...dailyLog.moods);
-    if (dailyLog.physical_activity) list.push(...dailyLog.physical_activity);
+    if (currentLog?.flow) list.push(`Flow: ${currentLog.flow}`);
+    if (currentLog?.symptoms) list.push(...currentLog.symptoms);
+    if (currentLog?.moods) list.push(...currentLog.moods);
+    if (currentLog?.physical_activity) list.push(...currentLog.physical_activity);
     return list;
-  }, [dailyLog]);
+  }, [currentLog]);
+
+  const handleClearNote = () => {
+    Alert.alert('Clear Note', 'Are you sure you want to delete this note?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: () => updateDailyLog({ note: '' }),
+      },
+    ]);
+  };
 
   return (
-    <View className="flex-1 bg-bg">
-      <SafeAreaView edges={['top']} className="bg-white px-4 pb-3">
+    <View className="flex-1 bg-bg dark:bg-dark-bg">
+      <SafeAreaView edges={['top']} className="bg-card dark:bg-dark-card px-4 pb-3 border-b border-gray-100 dark:border-dark-border">
         <View className="flex-row items-center justify-between mb-4 pt-2">
           <Pressable
             onPress={() => navigation.navigate('CycleInfo')}
-            className="px-4 py-1.5 rounded-full border border-gray-200"
+            className="px-4 py-1.5 rounded-full border border-gray-200 dark:border-dark-border active:opacity-70"
           >
-            <Text className="text-sm font-bold text-text">Overview</Text>
+            <Text className="text-sm font-bold text-text dark:text-dark-text">Overview</Text>
           </Pressable>
           <View className="flex-row items-center gap-1">
-            <Text className="text-lg font-extrabold text-text">
+            <Text className="text-lg font-extrabold text-text dark:text-dark-text">
               {new Date().toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}
             </Text>
-            <Icon name={ICONS.chevronDown} size={16} color={colors.text} />
+            <Icon name={ICONS.chevronDown} size={16} color={isDark ? themeColors.text : colors.text} />
           </View>
           <Pressable
             onPress={() => setSelectedDay(new Date().getDate())}
-            className="px-4 py-1.5 rounded-full border border-gray-200"
+            className="px-4 py-1.5 rounded-full border border-gray-200 dark:border-dark-border active:opacity-70"
           >
-            <Text className="text-sm font-bold text-text">Today</Text>
+            <Text className="text-sm font-bold text-pink-primary">Today</Text>
           </Pressable>
         </View>
 
         <View className="flex-row mb-2">
           {DAY_HEADERS.map((d) => (
-            <Text key={d} className="flex-1 text-center text-[10px] font-bold text-muted">
+            <Text key={d} className="flex-1 text-center text-[10px] font-bold text-muted dark:text-dark-muted">
               {d}
             </Text>
           ))}
@@ -114,9 +127,9 @@ export function CalendarScreen() {
                       isSelected
                         ? 'bg-pink-primary'
                         : isPeriod
-                        ? 'bg-pink-light'
+                        ? 'bg-pink-light dark:bg-dark-card-hover'
                         : isFertile
-                        ? 'bg-teal-light'
+                        ? 'bg-teal-light dark:bg-dark-card-hover'
                         : ''
                     }`}
                     style={
@@ -133,7 +146,7 @@ export function CalendarScreen() {
                           ? 'text-pink-dark'
                           : isFertile
                           ? 'text-teal-dark'
-                          : 'text-text'
+                          : 'text-text dark:text-dark-text'
                       }`}
                     >
                       {day}
@@ -152,10 +165,10 @@ export function CalendarScreen() {
         ))}
       </SafeAreaView>
 
-      <ScrollView className="flex-1 px-4" contentContainerClassName="py-4 pb-24">
+      <ScrollView className="flex-1 px-4" contentContainerClassName="py-4 pb-24" showsVerticalScrollIndicator={false}>
         <View className="flex-row items-start justify-between mb-1">
           <View>
-            <Text className="text-sm font-extrabold text-text">
+            <Text className="text-sm font-extrabold text-text dark:text-dark-text">
               {selectedDay} {new Date().toLocaleDateString('en-GB', { month: 'short' })} –{' '}
               {isSelectedPeriod
                 ? 'Menstruation days'
@@ -163,35 +176,37 @@ export function CalendarScreen() {
                 ? 'Fertile window'
                 : 'Follicular / Luteal'}
             </Text>
-            <Text className="text-xs text-muted font-semibold mt-0.5">
+            <Text className="text-xs text-muted dark:text-dark-muted font-semibold mt-0.5">
               Pregnancy Chance {pregnancyChance}
             </Text>
           </View>
           <Pressable
             onPress={() => navigation.navigate('LogPeriod')}
-            className="flex-row items-center gap-1 px-3 py-1.5 rounded-full border border-gray-200"
+            className="flex-row items-center gap-1 px-3 py-1.5 rounded-full border border-gray-200 dark:border-dark-border active:opacity-70"
           >
-            <Icon name={ICONS.edit} size={14} color={colors.text} />
-            <Text className="text-xs font-bold text-text">Edit</Text>
+            <Icon name={ICONS.edit} size={14} color={colors.pinkPrimary} />
+            <Text className="text-xs font-bold text-pink-primary">Edit</Text>
           </Pressable>
         </View>
 
-        <View className="bg-white rounded-2xl p-4 shadow-sm mt-3">
-          <Mascot className="absolute right-0 -top-6 z-10" />
+        <View className="bg-card dark:bg-dark-card rounded-2xl p-4 shadow-sm mt-3 border border-gray-100 dark:border-dark-border relative overflow-hidden">
           <View className="flex-row items-center justify-between mb-3">
-            <Text className="font-bold text-sm text-text">Symptoms and activities</Text>
-            <Pressable
-              onPress={() => navigation.navigate('SymptomsLog')}
-              className="w-8 h-8 rounded-full border border-gray-200 items-center justify-center"
-            >
-              <Icon name={ICONS.add} size={16} color="#6B7280" />
-            </Pressable>
+            <Text className="font-bold text-sm text-text dark:text-dark-text">Symptoms and activities</Text>
+            <View className="flex-row items-center gap-2">
+              <Mascot className="scale-75 -mr-2" />
+              <Pressable
+                onPress={() => navigation.navigate('SymptomsLog')}
+                className="w-8 h-8 rounded-full border border-gray-200 dark:border-dark-border items-center justify-center active:opacity-70"
+              >
+                <Icon name={ICONS.add} size={16} color={colors.pinkPrimary} />
+              </Pressable>
+            </View>
           </View>
 
           {loggedSymptoms.length > 0 ? (
             <View className="flex-row flex-wrap gap-2">
               {loggedSymptoms.map((s, i) => (
-                <View key={i} className="px-3 py-1.5 rounded-full bg-pink-light">
+                <View key={i} className="px-3 py-1.5 rounded-full bg-pink-light dark:bg-dark-card-hover">
                   <Text className="text-xs font-bold text-pink-dark">{s}</Text>
                 </View>
               ))}
@@ -199,7 +214,7 @@ export function CalendarScreen() {
           ) : (
             <View className="flex-row flex-wrap gap-2">
               {ACTIVITY_ICONS.slice(0, 8).map((icon, i) => (
-                <View key={i} className="w-10 h-10 rounded-full bg-pink-light items-center justify-center">
+                <View key={i} className="w-10 h-10 rounded-full bg-pink-light dark:bg-dark-card-hover items-center justify-center">
                   <Icon name={icon} size={18} color={colors.pinkDark} />
                 </View>
               ))}
@@ -210,48 +225,71 @@ export function CalendarScreen() {
         <View className="flex-row gap-2 mt-3">
           <StatCard
             label="Weight"
-            value={dailyLog.weight ? String(dailyLog.weight) : '45.6'}
+            value={currentLog?.weight ?? 45.6}
             unit="kg"
             icon={ICONS.weight}
+            minRange={30}
+            maxRange={200}
+            onSave={(val) => updateStat('weight', val)}
           />
           <StatCard
             label="Temperature"
-            value={dailyLog.temperature ? String(dailyLog.temperature) : '36.5'}
+            value={currentLog?.temperature ?? 36.5}
             unit="C"
             icon={ICONS.temperature}
+            minRange={35}
+            maxRange={42}
+            onSave={(val) => updateStat('temperature', val)}
           />
           <StatCard
             label="Sleep"
-            value={dailyLog.sleep_minutes ? String(dailyLog.sleep_minutes) : '480'}
+            value={currentLog?.sleep_minutes ?? 480}
             unit="min"
             icon={ICONS.sleep}
+            minRange={0}
+            maxRange={1440}
+            onSave={(val) => updateStat('sleep_minutes', val)}
           />
           <StatCard
             label="Drink"
-            value={dailyLog.water_ml ? String(dailyLog.water_ml) : '460'}
+            value={currentLog?.water_ml ?? 460}
             unit="ml"
             icon={ICONS.drink}
+            minRange={0}
+            maxRange={10000}
+            onSave={(val) => updateStat('water_ml', val)}
           />
         </View>
 
-        <View className="bg-white rounded-2xl p-4 shadow-sm mt-3">
+        <View className="bg-card dark:bg-dark-card rounded-2xl p-4 shadow-sm mt-3 border border-gray-100 dark:border-dark-border">
           <View className="flex-row items-center justify-between mb-2">
             <View className="flex-row items-center gap-2">
-              <Icon name={ICONS.note} size={18} color={colors.text} />
-              <Text className="font-bold text-sm text-text">Note</Text>
+              <Icon name={ICONS.note} size={18} color={colors.pinkPrimary} />
+              <Text className="font-bold text-sm text-text dark:text-dark-text">Note</Text>
             </View>
-            <Pressable
-              onPress={() => navigation.navigate('SymptomsLog')}
-              className="w-8 h-8 rounded-full bg-gray-100 items-center justify-center"
-            >
-              <Icon name={ICONS.edit} size={14} color="#6B7280" />
-            </Pressable>
+            <View className="flex-row items-center gap-2">
+              {Boolean(currentLog?.note) && (
+                <Pressable
+                  onPress={handleClearNote}
+                  className="w-8 h-8 rounded-full bg-gray-100 dark:bg-dark-card-hover items-center justify-center active:opacity-70"
+                >
+                  <Icon name="trash-outline" size={14} color="#EF4444" />
+                </Pressable>
+              )}
+              <Pressable
+                onPress={() => navigation.navigate('SymptomsLog')}
+                className="w-8 h-8 rounded-full bg-gray-100 dark:bg-dark-card-hover items-center justify-center active:opacity-70"
+              >
+                <Icon name={ICONS.edit} size={14} color={colors.pinkPrimary} />
+              </Pressable>
+            </View>
           </View>
-          <Text className="text-sm text-text font-semibold">
-            {dailyLog.note || 'Log symptoms or make a note for this day'}
+          <Text className="text-sm text-text dark:text-dark-text font-semibold">
+            {currentLog?.note || 'Log symptoms or make a note for this day'}
           </Text>
         </View>
       </ScrollView>
     </View>
   );
 }
+

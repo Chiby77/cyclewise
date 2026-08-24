@@ -19,7 +19,9 @@ import { ExportReportScreen } from '@/screens/ExportReportScreen';
 import { LanguageModalScreen } from '@/screens/LanguageModalScreen';
 import { AIHealthAssistantScreen } from '@/screens/AIHealthAssistantScreen';
 import { SignInScreen } from '@/screens/SignInScreen';
-import { SignUpScreen } from '@/screens/SignUpScreen';
+import { AccountScreen } from '@/screens/AccountScreen';
+import { TermsScreen } from '@/screens/TermsScreen';
+import { PrivacyPolicyScreen } from '@/screens/PrivacyPolicyScreen';
 import { useAuth } from '@/context/AuthContext';
 
 const Tab = createBottomTabNavigator<TabParamList>();
@@ -54,6 +56,8 @@ export function RootNavigator() {
         <Stack.Group>
           <Stack.Screen name="SignIn" component={SignInScreen} />
           <Stack.Screen name="SignUp" component={SignUpScreen} />
+          <Stack.Screen name="Terms" component={TermsScreen} />
+          <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
         </Stack.Group>
       ) : (
         <Stack.Group>
@@ -74,6 +78,9 @@ export function RootNavigator() {
             options={{ presentation: 'transparentModal', animation: 'fade' }}
           />
           <Stack.Screen name="AIHealthAssistant" component={AIHealthAssistantScreen} />
+          <Stack.Screen name="Account" component={AccountScreen} />
+          <Stack.Screen name="Terms" component={TermsScreen} />
+          <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
         </Stack.Group>
       )}
     </Stack.Navigator>
