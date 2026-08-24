@@ -137,6 +137,7 @@ export async function scheduleNextChangeReminder(
     const nextFireDate = new Date(lastTime + effectiveIntervalHours * 60 * 60 * 1000);
     const now = new Date();
 
+    // 1. Routine Reminder
     if (nextFireDate > now) {
       // Check quiet hours
       const inQuietHours =
@@ -150,6 +151,7 @@ export async function scheduleNextChangeReminder(
             title: `Time to Change Your ${config.productType} 🌸`,
             body: `It's been ${effectiveIntervalHours} hours since your last change — time to switch for fresh protection.`,
             sound: true,
+            interruptionLevel: 'active',
             data: { type: 'pad_reminder', product: config.productType },
           },
           trigger: {
@@ -158,10 +160,26 @@ export async function scheduleNextChangeReminder(
           },
         });
       }
+    } else if (config.lastChangedTimestamp) {
+      // Catch-up: interval already elapsed when user changed settings mid-cycle
+      await Notifications.scheduleNotificationAsync({
+        identifier: NOTIFICATION_ID_ROUTINE,
+        content: {
+          title: `Time to Change Your ${config.productType} 🌸`,
+          body: `Your ${config.productType} has been worn longer than your configured ${effectiveIntervalHours}h interval.`,
+          sound: true,
+          interruptionLevel: 'active',
+          data: { type: 'pad_reminder', product: config.productType },
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+          seconds: 5, // Deliver shortly
+        },
+      });
     }
 
-    // TAMPON SAFETY CEILING NOTIFICATION (Strict 8-Hour TSS Rule)
-    // Never suppressed by quiet hours!
+    // 2. TAMPON SAFETY CEILING NOTIFICATION (Strict 8-Hour TSS Rule)
+    // Never suppressed by quiet hours! Uses timeSensitive on iOS & MAX priority on Android.
     if (config.productType === 'Tampon') {
       const safetyFireDate = new Date(lastTime + 8 * 60 * 60 * 1000);
       if (safetyFireDate > now) {
@@ -172,11 +190,29 @@ export async function scheduleNextChangeReminder(
             body: 'Tampons should not be worn longer than 8 hours to avoid Toxic Shock Syndrome (TSS). Please change now.',
             sound: true,
             priority: Notifications.AndroidNotificationPriority.MAX,
+            interruptionLevel: 'timeSensitive',
             data: { type: 'tampon_safety_limit' },
           },
           trigger: {
             type: Notifications.SchedulableTriggerInputTypes.DATE,
             date: safetyFireDate,
+          },
+        });
+      } else {
+        // Immediate safety alert if switching to Tampon when already worn >= 8h
+        await Notifications.scheduleNotificationAsync({
+          identifier: NOTIFICATION_ID_SAFETY,
+          content: {
+            title: '⚠️ Tampon Safety Alert: 8+ Hours Worn',
+            body: 'Your logged wear time is at or above the 8-hour TSS safety limit. Please change your tampon immediately.',
+            sound: true,
+            priority: Notifications.AndroidNotificationPriority.MAX,
+            interruptionLevel: 'timeSensitive',
+            data: { type: 'tampon_safety_limit' },
+          },
+          trigger: {
+            type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+            seconds: 2,
           },
         });
       }
