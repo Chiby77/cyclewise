@@ -82,12 +82,24 @@
                   "targetName": "CycleWiseWidgets",
                   "bundleIdentifier": "com.bluewave.cyclewise.CycleWiseWidgets",
                   "entitlements": {}
+                },
+                {
+                  "targetName": "CycleWiseWidgets",
+                  "bundleIdentifier": "com.bluewave.cyclewise.CycleWiseWidgets",
+                  "entitlements": {}
+                },
+                {
+                  "targetName": "CycleWiseWidgets",
+                  "bundleIdentifier": "com.bluewave.cyclewise.CycleWiseWidgets",
+                  "entitlements": {}
                 }
               ]
             }
           }
-        }
+        },
+        "projectId": "7ea71c67-fdb0-4a43-ab29-f614d00b4930"
       }
-    }
+    },
+    "owner": "tino_chiby"
   }
 }
