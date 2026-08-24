@@ -9,6 +9,11 @@ import {
   DailyLog,
 } from '@/db/sqlite';
 import { syncService, subscribeToSyncUpdates } from '@/services/syncService';
+import {
+  getPadReminderConfig,
+  scheduleNextChangeReminder,
+  cancelPadReminders,
+} from '@/services/padReminderService';
 
 type HealthContextValue = {
   selectedDate: string; // YYYY-MM-DD
@@ -128,6 +133,19 @@ export function HealthProvider({ children }: { children: React.ReactNode }) {
         user_id: userId,
         log_date: d,
         flow: log?.flow || 'Medium',
+      });
+    }
+
+    // Lifecycle check for Pad/Tampon reminders
+    const todayKey = format(new Date(), 'yyyy-MM-dd');
+    const isTodayActive = datesSet.has(todayKey);
+    if (!isTodayActive) {
+      cancelPadReminders().catch(console.warn);
+    } else {
+      getPadReminderConfig().then((cfg) => {
+        if (cfg.enabled) {
+          scheduleNextChangeReminder(cfg).catch(console.warn);
+        }
       });
     }
 

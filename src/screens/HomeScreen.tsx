@@ -306,19 +306,23 @@ export function HomeScreen() {
         {isPeriodActiveToday && (
           <View className="bg-card dark:bg-dark-card rounded-2xl p-4 shadow-sm mb-3 border border-pink-light dark:border-dark-border">
             <View className="flex-row items-center justify-between mb-2">
-              <View className="flex-row items-center gap-2">
+              <View className="flex-row items-center gap-2 flex-1 pr-2">
                 <Icon name={ICONS.flowMedium} size={18} color={colors.pinkPrimary} />
-                <Text className="font-extrabold text-text dark:text-dark-text text-sm">
+                <Text className="font-extrabold text-text dark:text-dark-text text-sm" numberOfLines={1}>
                   {padConfig?.productType || 'Pad'} Change Tracker
                 </Text>
               </View>
-              <Pressable onPress={() => setPadModalVisible(true)} className="p-1 active:opacity-70">
-                <Icon name="options-outline" size={18} color={colors.pinkPrimary} />
+              <Pressable
+                onPress={() => setPadModalVisible(true)}
+                className="p-1.5 rounded-full bg-gray-100 dark:bg-dark-card-hover active:opacity-70"
+                accessibilityLabel="Reminder settings"
+              >
+                <Icon name="options-outline" size={16} color={colors.pinkPrimary} />
               </Pressable>
             </View>
 
-            <View className="flex-row items-center justify-between py-1">
-              <View>
+            <View className="flex-row flex-wrap items-center justify-between gap-3 py-1">
+              <View className="min-w-[120px]">
                 <Text className="text-xs text-muted dark:text-dark-muted font-semibold">Last changed:</Text>
                 <Text className="text-base font-extrabold text-text dark:text-dark-text mt-0.5">
                   {wearTimeInfo.elapsedText}
@@ -327,13 +331,14 @@ export function HomeScreen() {
               <Pressable
                 onPress={handleLogChange}
                 className="px-4 py-2.5 rounded-full bg-pink-primary items-center active:opacity-80 shadow-sm"
+                accessibilityLabel="Log a product change now"
               >
                 <Text className="text-white text-xs font-bold">✓ Logged a change</Text>
               </Pressable>
             </View>
 
             {wearTimeInfo.isNearingCeiling && (
-              <View className="mt-2 p-2 bg-red-50 dark:bg-red-950/40 rounded-xl border border-red-200 dark:border-red-800 flex-row items-center gap-2">
+              <View className="mt-2.5 p-2.5 bg-red-50 dark:bg-red-950/40 rounded-xl border border-red-200 dark:border-red-800 flex-row items-center gap-2">
                 <Icon name="alert-circle-outline" size={16} color="#EF4444" />
                 <Text className="text-xs font-bold text-red-600 dark:text-red-400 flex-1">
                   Tampon worn for &gt;6 hours. Change soon (max 8h TSS limit).
