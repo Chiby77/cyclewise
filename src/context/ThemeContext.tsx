@@ -42,6 +42,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     return systemScheme === 'dark';
   }, [themePreference, systemScheme]);
 
+  useEffect(() => {
+    setColorScheme(isDark ? 'dark' : 'light');
+  }, [isDark, setColorScheme]);
+
   const themeColors = useMemo(() => getThemeColors(isDark), [isDark]);
 
   const value = useMemo(
