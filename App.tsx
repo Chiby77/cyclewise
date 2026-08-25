@@ -1,5 +1,6 @@
 import '@/lib/expoPolyfill';
 import React, { useEffect, useState } from 'react';
+import { View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -20,14 +21,14 @@ initSentry();
 function MainApp() {
   const { isDark } = useTheme();
   return (
-    <>
+    <View style={{ flex: 1, colorScheme: isDark ? 'dark' : 'light' } as any}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <NavigationContainer>
         <AppLockOverlay>
           <RootNavigator />
         </AppLockOverlay>
       </NavigationContainer>
-    </>
+    </View>
   );
 }
 
